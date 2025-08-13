@@ -1,0 +1,20 @@
+{
+  "name": "form-builder",
+  "version": "1.0.0",
+  "description": "Form Builder Application",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo 'Node.js container is running' && tail -f /dev/null",
+    "dev": "echo 'Development mode'",
+    "build": "echo 'Build completed'"
+  },
+  "keywords": [
+    "form",
+    "builder",
+    "node"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

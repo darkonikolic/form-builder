@@ -1,0 +1,16 @@
+{
+  "name": "form-builder/app",
+  "description": "Form Builder Application",
+  "type": "project",
+  "require": {
+    "php": ">=8.2"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
