@@ -1,7 +1,7 @@
 # Makefile for form-builder project
 
 # Docker Compose commands
-.PHONY: help build up down restart logs clean ps shell-php shell-node shell-postgres shell-composer composer-install setup
+.PHONY: help build up down restart logs clean ps shell-php shell-node shell-postgres shell-composer composer-install check-all setup
 
 help:
 	@echo "Available targets:"
@@ -19,6 +19,7 @@ help:
 	@echo "  shell-postgres - Open shell in PostgreSQL container"
 	@echo "  shell-composer - Open shell in Composer container"
 	@echo "  composer-install - Install PHP dependencies"
+	@echo "  check-all      - Fix all files, check pest, run all tests"
 
 setup:
 	@echo "Setting up environment..."
@@ -71,3 +72,13 @@ shell-composer:
 
 composer-install:
 	docker-compose -f docker/docker-compose.yml exec composer composer install
+
+check-all:
+	@echo "🔧 Running comprehensive code quality check..."
+	@echo "1. Fixing all files with Laravel Pint..."
+	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --repair
+	@echo "2. Testing code style after fixes..."
+	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --test
+	@echo "3. Running all tests..."
+	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pest
+	@echo "✅ All checks completed successfully!"
