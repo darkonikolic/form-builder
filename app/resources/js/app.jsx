@@ -1,17 +1,7 @@
 import '../css/app.css';
 import './bootstrap';
 import { createRoot } from 'react-dom/client';
-import React from 'react';
-import Welcome from './Pages/Welcome';
-
-// Main App Component
-function FormBuilderApp() {
-    return (
-        <div className="min-h-screen bg-gray-100">
-            <Welcome />
-        </div>
-    );
-}
+import FormBuilderApp from './Components/FormBuilderApp';
 
 // Initialize React app
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

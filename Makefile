@@ -34,6 +34,7 @@ help:
 	@echo "  db-recreate    - Drop database, recreate, run migrations and seed"
 	@echo "  db-recreate-test - Create test database, run migrations and seed"
 	@echo "  rector         - Run Rector for PHP code improvements"
+	@echo "  swagger        - Generate Swagger API documentation"
 
 setup:
 	@echo "Setting up environment..."
@@ -51,6 +52,7 @@ setup:
 	@echo "Setup complete! Services are running."
 	@echo "Access:"
 	@echo "  - Web app: http://localhost:8085"
+	@echo "  - API docs: http://localhost:8085/api/documentation"
 	@echo "  - pgAdmin: http://localhost:8081"
 	@echo "  - PostgreSQL: localhost:5433"
 	@echo "Test users created:"
@@ -127,9 +129,11 @@ check-all:
 	docker compose -f docker/docker-compose.yml exec node npm run lint
 	@echo "7. Checking JavaScript formatting with Prettier..."
 	docker compose -f docker/docker-compose.yml exec node npm run format:check
-	@echo "8. Recreating test database..."
+	@echo "8. Generating Swagger API documentation..."
+	@make swagger
+	@echo "9. Recreating test database..."
 	@make db-recreate-test
-	@echo "9. Running all tests..."
+	@echo "10. Running all tests..."
 	docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest
 	@echo "✅ All checks completed successfully!"
 
@@ -198,3 +202,8 @@ rector:
 	@echo "🔧 Running Rector for PHP code improvements..."
 	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/rector process --dry-run
 	@echo "✅ Rector analysis completed!"
+
+swagger:
+	@echo "📚 Generating Swagger API documentation..."
+	docker compose -f docker/docker-compose.yml exec php php artisan l5-swagger:generate
+	@echo "✅ Swagger documentation generated successfully!"

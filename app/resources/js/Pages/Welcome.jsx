@@ -1,4 +1,3 @@
-import React from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function Welcome() {
