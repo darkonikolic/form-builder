@@ -29,7 +29,10 @@ help:
 	@echo "  js-style       - Check JavaScript code style and formatting"
 	@echo "  migrate        - Run database migrations"
 	@echo "  migrate-fresh  - Drop all tables and re-run migrations"
-	@echo "  db-recreate    - Drop database, recreate and run migrations"
+	@echo "  seed           - Run database seeders"
+	@echo "  migrate-fresh-seed - Drop all tables, re-run migrations and seed"
+	@echo "  db-recreate    - Drop database, recreate, run migrations and seed"
+	@echo "  db-recreate-test - Create test database, run migrations and seed"
 	@echo "  rector         - Run Rector for PHP code improvements"
 
 setup:
@@ -41,11 +44,22 @@ setup:
 	@echo "Building and starting services..."
 	@make build
 	@make up
+	@echo "Waiting for services to be ready..."
+	@sleep 10
+	@echo "Setting up database..."
+	@make db-recreate
 	@echo "Setup complete! Services are running."
 	@echo "Access:"
 	@echo "  - Web app: http://localhost:8085"
 	@echo "  - pgAdmin: http://localhost:8081"
 	@echo "  - PostgreSQL: localhost:5433"
+	@echo "Test users created:"
+	@echo "  - admin@example.com / password"
+	@echo "  - test@example.com / password"
+	@echo "  - demo@example.com / password"
+	@echo ""
+	@echo "Running comprehensive code quality check..."
+	@make check-all
 
 build:
 	docker compose -f docker/docker-compose.yml build
@@ -63,8 +77,21 @@ logs:
 	docker compose -f docker/docker-compose.yml logs -f
 
 clean:
+	@echo "🧹 Cleaning up Docker environment..."
 	docker compose -f docker/docker-compose.yml down -v --remove-orphans
-	docker system prune -f
+	@echo "✅ Docker Compose services stopped and cleaned"
+	
+clean-all:
+	@echo "🗑️  RADICAL cleanup - removing ALL unused Docker resources..."
+	@echo "⚠️  This will delete ALL unused images, volumes, networks, and cache!"
+	@echo "Are you sure? (y/N)"
+	@read -p "" confirm && if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		docker compose -f docker/docker-compose.yml down -v --remove-orphans; \
+		docker system prune -af --volumes; \
+		echo "✅ All Docker resources cleaned!"; \
+	else \
+		echo "❌ Cleanup cancelled"; \
+	fi
 
 ps:
 	docker compose -f docker/docker-compose.yml ps
@@ -100,8 +127,10 @@ check-all:
 	docker compose -f docker/docker-compose.yml exec node npm run lint
 	@echo "7. Checking JavaScript formatting with Prettier..."
 	docker compose -f docker/docker-compose.yml exec node npm run format:check
-	@echo "8. Running all tests..."
-	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/pest
+	@echo "8. Recreating test database..."
+	@make db-recreate-test
+	@echo "9. Running all tests..."
+	docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest
 	@echo "✅ All checks completed successfully!"
 
 restart-node:
@@ -139,13 +168,31 @@ migrate-fresh:
 	docker compose -f docker/docker-compose.yml exec php php artisan migrate:fresh
 	@echo "Database refreshed and migrations completed!"
 
+seed:
+	docker compose -f docker/docker-compose.yml exec php php artisan db:seed
+	@echo "Database seeded successfully!"
+
+migrate-fresh-seed:
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate:fresh --seed
+	@echo "Database refreshed, migrated and seeded successfully!"
+
 db-recreate:
 	@echo "🗑️  Dropping and recreating database..."
 	docker compose -f docker/docker-compose.yml exec postgres dropdb -U postgres form_builder --if-exists
 	docker compose -f docker/docker-compose.yml exec postgres createdb -U postgres form_builder
 	@echo "🔄 Running migrations..."
 	docker compose -f docker/docker-compose.yml exec php php artisan migrate
-	@echo "✅ Database recreated successfully!"
+	@echo "🌱 Running seeders..."
+	docker compose -f docker/docker-compose.yml exec php php artisan db:seed
+	@echo "✅ Database recreated and seeded successfully!"
+
+db-recreate-test:
+	@echo "🧪 Creating test database..."
+	docker compose -f docker/docker-compose.yml exec postgres dropdb -U postgres form_builder_test --if-exists
+	docker compose -f docker/docker-compose.yml exec postgres createdb -U postgres form_builder_test
+	@echo "🔄 Running migrations on test database..."
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate:fresh --database=testing
+	@echo "✅ Test database recreated successfully!"
 
 rector:
 	@echo "🔧 Running Rector for PHP code improvements..."

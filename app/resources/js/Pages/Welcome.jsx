@@ -1,26 +1,21 @@
+import React from 'react';
+import PrimaryButton from '@/Components/PrimaryButton';
+
 export default function Welcome() {
-    const handleTestClick = () => {
-        alert('Test Button je kliknut! 🎉');
-        console.log('Test Button clicked');
+    const handleClick = () => {
+        alert('Hello from Form Builder!');
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
             <div className="text-center">
-                <h1 className="text-6xl font-bold text-indigo-600 mb-6">
-                    Form Builder - Welcome 🚀
+                <h1 className="text-4xl font-bold text-gray-900 mb-6">
+                    Welcome to Form Builder
                 </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                    This is a test component - it should work now!
+                <p className="text-lg text-gray-600 mb-8">
+                    Simple and clean React application
                 </p>
-                <div className="space-y-4">
-                    <button 
-                        onClick={handleTestClick}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-                    >
-                        Test Button
-                    </button>
-                </div>
+                <PrimaryButton onClick={handleClick}>Click Me!</PrimaryButton>
             </div>
         </div>
     );

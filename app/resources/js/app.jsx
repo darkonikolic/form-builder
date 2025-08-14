@@ -1,25 +1,22 @@
 import '../css/app.css';
 import './bootstrap';
-
-import { createInertiaApp } from '@inertiajs/react';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import React from 'react';
+import Welcome from './Pages/Welcome';
 
+// Main App Component
+function FormBuilderApp() {
+    return (
+        <div className="min-h-screen bg-gray-100">
+            <Welcome />
+        </div>
+    );
+}
+
+// Initialize React app
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+document.title = `Form Builder - ${appName}`;
 
-createInertiaApp({
-    title: title => `${title} - ${appName}`,
-    resolve: name =>
-        resolvePageComponent(
-            `./Pages/${name}.jsx`,
-            import.meta.glob('./Pages/**/*.jsx')
-        ),
-    setup({ el, App, props }) {
-        const root = createRoot(el);
-
-        root.render(<App {...props} />);
-    },
-    progress: {
-        color: '#4B5563',
-    },
-});
+const container = document.getElementById('app');
+const root = createRoot(container);
+root.render(<FormBuilderApp />);
