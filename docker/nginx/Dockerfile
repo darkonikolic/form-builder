@@ -1,12 +1,10 @@
 FROM nginx:alpine
 
-# Copy custom nginx configuration from the nginx subfolder
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY nginx/sites-available/default /etc/nginx/sites-available/default
+# Remove default Nginx configurations
+RUN rm -rf /etc/nginx/conf.d/*
 
-# Create necessary directories and symlink
-RUN mkdir -p /etc/nginx/sites-enabled && \
-    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+# Copy our custom nginx configuration
+COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80

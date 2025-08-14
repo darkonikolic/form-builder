@@ -1,7 +1,7 @@
 # Makefile for form-builder project
 
 # Docker Compose commands
-.PHONY: help build up down restart logs clean ps shell-php shell-node shell-postgres shell-composer composer-install check-all setup
+.PHONY: help build up down restart logs logs-node clean ps shell-php shell-node shell-postgres shell-composer composer-install check-all setup restart-node node-build
 
 help:
 	@echo "Available targets:"
@@ -11,7 +11,10 @@ help:
 	@echo "  up             - Start all services"
 	@echo "  down           - Stop all services"
 	@echo "  restart        - Restart all services"
+	@echo "  restart-node   - Restart Node.js container for dev mode"
+	@echo "  node-build     - Build React assets with Vite"
 	@echo "  logs           - Show logs from all services"
+	@echo "  logs-node      - Show logs from Node.js container"
 	@echo "  clean          - Remove all containers and volumes"
 	@echo "  ps             - Show running containers"
 	@echo "  shell-php      - Open shell in PHP container"
@@ -20,6 +23,14 @@ help:
 	@echo "  shell-composer - Open shell in Composer container"
 	@echo "  composer-install - Install PHP dependencies"
 	@echo "  check-all      - Fix all files, check pest, run all tests"
+	@echo "  js-lint        - Check JavaScript code style with ESLint"
+	@echo "  js-lint-fix    - Fix JavaScript code style issues"
+	@echo "  js-format      - Format JavaScript code with Prettier"
+	@echo "  js-style       - Check JavaScript code style and formatting"
+	@echo "  migrate        - Run database migrations"
+	@echo "  migrate-fresh  - Drop all tables and re-run migrations"
+	@echo "  db-recreate    - Drop database, recreate and run migrations"
+	@echo "  rector         - Run Rector for PHP code improvements"
 
 setup:
 	@echo "Setting up environment..."
@@ -37,48 +48,106 @@ setup:
 	@echo "  - PostgreSQL: localhost:5433"
 
 build:
-	docker-compose -f docker/docker-compose.yml build
+	docker compose -f docker/docker-compose.yml build
 
 up:
-	docker-compose -f docker/docker-compose.yml up -d
+	docker compose -f docker/docker-compose.yml up -d
 
 down:
-	docker-compose -f docker/docker-compose.yml down
+	docker compose -f docker/docker-compose.yml down
 
 restart:
-	docker-compose -f docker/docker-compose.yml restart
+	docker compose -f docker/docker-compose.yml restart
 
 logs:
-	docker-compose -f docker/docker-compose.yml logs -f
+	docker compose -f docker/docker-compose.yml logs -f
 
 clean:
-	docker-compose -f docker/docker-compose.yml down -v --remove-orphans
+	docker compose -f docker/docker-compose.yml down -v --remove-orphans
 	docker system prune -f
 
 ps:
-	docker-compose -f docker/docker-compose.yml ps
+	docker compose -f docker/docker-compose.yml ps
 
 shell-php:
-	docker-compose -f docker/docker-compose.yml exec php bash
+	docker compose -f docker/docker-compose.yml exec php bash
 
 shell-node:
-	docker-compose -f docker/docker-compose.yml exec node sh
+	docker compose -f docker/docker-compose.yml exec node sh
 
 shell-postgres:
-	docker-compose -f docker/docker-compose.yml exec postgres psql -U postgres -d form_builder
+	docker compose -f docker/docker-compose.yml exec postgres psql -U postgres -d form_builder
 
 shell-composer:
-	docker-compose -f docker/docker-compose.yml exec composer sh
+	docker compose -f docker/docker-compose.yml exec composer sh
 
 composer-install:
-	docker-compose -f docker/docker-compose.yml exec composer composer install
+	docker compose -f docker/docker-compose.yml exec composer composer install
 
 check-all:
 	@echo "🔧 Running comprehensive code quality check..."
 	@echo "1. Fixing all files with Laravel Pint..."
-	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --repair
+	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --repair
 	@echo "2. Testing code style after fixes..."
-	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --test
-	@echo "3. Running all tests..."
-	docker-compose -f docker/docker-compose.yml exec composer ./vendor/bin/pest
+	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/pint --test
+	@echo "3. Running Rector for PHP code improvements..."
+	docker compose -f docker/docker-compose.yml exec php ./vendor/bin/rector process
+	@echo "4. Fixing JavaScript code style issues..."
+	docker compose -f docker/docker-compose.yml exec node npm run lint:fix
+	@echo "5. Formatting JavaScript code with Prettier..."
+	docker compose -f docker/docker-compose.yml exec node npm run format
+	@echo "6. Checking JavaScript code style with ESLint..."
+	docker compose -f docker/docker-compose.yml exec node npm run lint
+	@echo "7. Checking JavaScript formatting with Prettier..."
+	docker compose -f docker/docker-compose.yml exec node npm run format:check
+	@echo "8. Running all tests..."
+	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/pest
 	@echo "✅ All checks completed successfully!"
+
+restart-node:
+	docker compose -f docker/docker-compose.yml restart node
+	@echo "Node.js container restarted for development mode"
+
+node-build:
+	docker compose -f docker/docker-compose.yml exec node npm run build
+	@echo "React assets built successfully with Vite!"
+
+logs-node:
+	docker compose -f docker/docker-compose.yml logs -f node
+
+js-lint:
+	docker compose -f docker/docker-compose.yml exec node npm run lint
+	@echo "JavaScript linting completed!"
+
+js-lint-fix:
+	docker compose -f docker/docker-compose.yml exec node npm run lint:fix
+	@echo "JavaScript linting issues fixed!"
+
+js-format:
+	docker compose -f docker/docker-compose.yml exec node npm run format
+	@echo "JavaScript code formatted with Prettier!"
+
+js-style:
+	docker compose -f docker/docker-compose.yml exec node npm run style
+	@echo "JavaScript code style check completed!"
+
+migrate:
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate
+	@echo "Database migrations completed!"
+
+migrate-fresh:
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate:fresh
+	@echo "Database refreshed and migrations completed!"
+
+db-recreate:
+	@echo "🗑️  Dropping and recreating database..."
+	docker compose -f docker/docker-compose.yml exec postgres dropdb -U postgres form_builder --if-exists
+	docker compose -f docker/docker-compose.yml exec postgres createdb -U postgres form_builder
+	@echo "🔄 Running migrations..."
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate
+	@echo "✅ Database recreated successfully!"
+
+rector:
+	@echo "🔧 Running Rector for PHP code improvements..."
+	docker compose -f docker/docker-compose.yml exec composer ./vendor/bin/rector process --dry-run
+	@echo "✅ Rector analysis completed!"

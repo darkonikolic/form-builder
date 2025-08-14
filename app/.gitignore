@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# ESLint and Prettier
+.eslintcache
+.prettierignore
