@@ -44,6 +44,18 @@ class Field extends Model
         });
     }
 
+    private function validateAllowedAttributes(array $config, array $allowedAttributes, string $typeName): void
+    {
+        $configKeys = array_keys($config);
+
+        foreach ($configKeys as $key) {
+            if (!in_array($key, $allowedAttributes) &&
+                !in_array($key, ['type', 'name', 'label', 'required', 'class', 'style', 'placeholder'])) {
+                throw new \Exception("Attribute '{$key}' is not allowed for {$typeName} fields. Allowed: " . implode(', ', $allowedAttributes));
+            }
+        }
+    }
+
     private function validateBasicConfiguration(): void
     {
         $config = $this->configuration ?? [];
@@ -60,6 +72,54 @@ class Field extends Model
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
+        }
+    }
+
+    private function validateCheckboxTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'checked', 'value', 'disabled', 'autofocus', 'required',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'checkbox-type');
+    }
+
+    private function validateColorTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'disabled', 'autofocus', 'required',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'color-type');
+    }
+
+    private function validateDateTimeTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'min', 'max', 'step', 'readonly', 'disabled', 'autofocus', 'required',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'datetime-type');
+
+        // Date validation
+        if (isset($config['min']) && isset($config['max'])) {
+            $minDate = strtotime($config['min']);
+            $maxDate = strtotime($config['max']);
+
+            if ($minDate === false || $maxDate === false) {
+                throw new \Exception('Invalid date format for min/max values');
+            }
+
+            if ($minDate >= $maxDate) {
+                throw new \Exception('min date must be before max date');
+            }
+        }
+
+        // Step validation for time fields
+        if (isset($config['step']) && in_array($config['type'], ['time', 'datetime-local'])) {
+            if (!preg_match('/^\d+$/', $config['step'])) {
+                throw new \Exception('Step must be a positive integer for time fields');
+            }
         }
     }
 
@@ -82,8 +142,98 @@ class Field extends Model
         // 2. Validate i18n data
         $this->validateI18nData($formLocales);
 
-        // 3. Validate validation rules
+        // 3. Validate type-specific configuration
+        $this->validateFieldTypeSpecific();
+
+        // 4. Validate validation rules
         $this->validateValidationRules($formLocales);
+    }
+
+    private function validateFieldTypeSpecific(): void
+    {
+        $config = $this->configuration ?? [];
+        $type = $config['type'] ?? '';
+
+        // Validate required fields for all types
+        $this->validateRequiredFields($config);
+
+        // Validate type-specific HTML attributes
+        switch ($type) {
+            case 'text':
+            case 'email':
+            case 'password':
+            case 'tel':
+            case 'search':
+            case 'url':
+                $this->validateTextTypeFields($config);
+
+                break;
+            case 'number':
+            case 'range':
+                $this->validateNumberTypeFields($config);
+
+                break;
+            case 'select':
+            case 'radio':
+                $this->validateSelectTypeFields($config);
+
+                break;
+            case 'checkbox':
+                $this->validateCheckboxTypeFields($config);
+
+                break;
+            case 'textarea':
+                $this->validateTextareaTypeFields($config);
+
+                break;
+            case 'file':
+                $this->validateFileTypeFields($config);
+
+                break;
+            case 'date':
+            case 'time':
+            case 'datetime-local':
+                $this->validateDateTimeTypeFields($config);
+
+                break;
+            case 'color':
+                $this->validateColorTypeFields($config);
+
+                break;
+            case 'hidden':
+                $this->validateHiddenTypeFields($config);
+
+                break;
+        }
+    }
+
+    private function validateFileTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'accept', 'multiple', 'capture', 'disabled', 'autofocus', 'required',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'file-type');
+
+        // Accept validation (basic MIME type check)
+        if (isset($config['accept'])) {
+            $acceptTypes = explode(',', $config['accept']);
+            foreach ($acceptTypes as $type) {
+                $type = trim($type);
+                if (!preg_match('/^(\*\/\*|[a-z]+\/[a-z0-9.-]+|[a-z]+\.[a-z0-9.-]+)$/i', $type)) {
+                    throw new \Exception("Invalid accept type format: {$type}");
+                }
+            }
+        }
+    }
+
+    private function validateHiddenTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'value', 'disabled',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'hidden-type');
     }
 
     private function validateI18nData(array $requiredLocales): void
@@ -150,6 +300,103 @@ class Field extends Model
         }
     }
 
+    private function validateNumberTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'min', 'max', 'step', 'readonly', 'disabled', 'placeholder',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'number-type');
+
+        // Cross-field validation
+        if (isset($config['min']) && isset($config['max'])) {
+            if ($config['min'] >= $config['max']) {
+                throw new \Exception('min must be less than max');
+            }
+        }
+
+        if (isset($config['step']) && isset($config['min']) && isset($config['max'])) {
+            $range = $config['max'] - $config['min'];
+            if ($config['step'] > $range) {
+                throw new \Exception('step cannot be greater than the range between min and max');
+            }
+        }
+    }
+
+    private function validateRequiredFields(array $config): void
+    {
+        // Required fields for ALL field types
+        $requiredFields = ['name'];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($config[$field]) || empty($config[$field])) {
+                throw new \Exception("Field '{$field}' is required for all field types");
+            }
+        }
+    }
+
+    private function validateSelectTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'multiple', 'size', 'required', 'disabled', 'autofocus', 'placeholder', 'options', 'inline', 'validation', 'ui',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'select-type');
+
+        // Options validation (required for select/radio)
+        if (!isset($config['options']) || !is_array($config['options']) || empty($config['options'])) {
+            throw new \Exception('Options array is required for select/radio fields');
+        }
+
+        foreach ($config['options'] as $index => $option) {
+            if (!isset($option['value']) || !isset($option['label'])) {
+                throw new \Exception("Option {$index} must have both 'value' and 'label'");
+            }
+        }
+
+        // Size validation for multiple select
+        if (isset($config['multiple']) && $config['multiple'] && isset($config['size'])) {
+            if ($config['size'] < 2) {
+                throw new \Exception('Size must be at least 2 for multiple select fields');
+            }
+        }
+    }
+
+    private function validateTextareaTypeFields(array $config): void
+    {
+        $allowedAttributes = [
+            'rows', 'cols', 'maxlength', 'minlength', 'readonly',
+            'disabled', 'autofocus', 'spellcheck', 'wrap', 'placeholder',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'textarea-type');
+
+        // Cross-field validation
+        if (isset($config['minlength']) && isset($config['maxlength'])) {
+            if ($config['minlength'] > $config['maxlength']) {
+                throw new \Exception('minlength cannot be greater than maxlength');
+            }
+        }
+    }
+
+    private function validateTextTypeFields(array $config): void
+    {
+        // HTML attributes for text-type inputs
+        $allowedAttributes = [
+            'maxlength', 'minlength', 'pattern', 'autocomplete', 'size',
+            'readonly', 'disabled', 'autofocus', 'spellcheck', 'placeholder',
+        ];
+
+        $this->validateAllowedAttributes($config, $allowedAttributes, 'text-type');
+
+        // Cross-field validation
+        if (isset($config['minlength']) && isset($config['maxlength'])) {
+            if ($config['minlength'] > $config['maxlength']) {
+                throw new \Exception('minlength cannot be greater than maxlength');
+            }
+        }
+    }
+
     private function validateValidationRules(array $requiredLocales): void
     {
         $rules = $this->validation_rules ?? [];
@@ -160,14 +407,14 @@ class Field extends Model
 
         foreach ($rules as $ruleName => $rule) {
             // Check if rule has implementation
-            if (!isset($rule['rule'])) {
-                throw new ValidationException("Rule '{$ruleName}' must have rule implementation");
+            if (!isset($rule['error_messages'])) {
+                throw new \Exception("Rule '{$ruleName}' must have error_messages");
             }
 
             // Check if rule has error messages for all locales
             foreach ($requiredLocales as $locale) {
                 if (!isset($rule['error_messages'][$locale])) {
-                    throw new ValidationException("Rule '{$ruleName}' missing error message for locale: {$locale}");
+                    throw new \Exception("Rule '{$ruleName}' missing error message for locale: {$locale}");
                 }
             }
         }

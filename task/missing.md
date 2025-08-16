@@ -15,7 +15,7 @@
 
 - [x] Create User migration (id, name, email, password, timestamps)
 - [x] Create Form migration (id, user_id, title, description, is_active, timestamps)
-- [x] Create Field migration (id, form_id, label, type, required, options, order, timestamps)
+- [x] Create Field migration (id, form_id, configuration, validation_rules, timestamps)
 - [x] Add foreign key constraints (user_id, form_id)
 - [x] Add database indexes on foreign keys
 - [x] Run migrations and verify table creation
@@ -62,8 +62,10 @@
 - [ ] Create FieldController with store method (add field to form)
 - [ ] Create FieldController with update method (edit field)
 - [ ] Create FieldController with destroy method (delete field)
-- [ ] Add field validation rules (label, type, required)
-- [ ] Support field types: text, number, textarea, select, checkbox
+- [x] Add field validation rules (label, type, required, name)
+- [x] Support field types: text, number, textarea, select, checkbox, radio, email, file, date, time, datetime-local, url, tel, search, color, range, hidden
+- [x] Add type-specific HTML attribute validation
+- [x] Add comprehensive negative test cases for field validation
 - [ ] Test all FieldController methods with Postman
 
 ### **Phase 7: API Routes & Middleware**
@@ -104,8 +106,8 @@
 - [ ] Create FormBuilder component with form title input
 - [ ] Create FormBuilder component with add field button
 - [ ] Create FieldEditor component for field properties
-- [ ] Support field types: text, number, textarea, select, checkbox
-- [ ] Add field validation (label required, type required)
+- [x] Support field types: text, number, textarea, select, checkbox, radio, email, file, date, time, datetime-local, url, tel, search, color, range, hidden
+- [x] Add field validation (label required, type required, name required)
 - [ ] Implement drag & drop field reordering
 - [ ] Test form creation in browser
 
@@ -142,6 +144,8 @@
 - Pest PHP testing framework with comprehensive tests
 - React.js setup with Tailwind CSS
 - Strict typing and PSR-12 standards
+- Type-specific field validation with HTML attribute validation
+- Comprehensive negative test cases for field validation
 
 ### **❌ Still Need to Complete:**
 

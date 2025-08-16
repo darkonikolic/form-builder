@@ -100,6 +100,7 @@ describe('Form Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'text',
+                    'name' => 'test_field',
                     'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
                     'required' => true,
                 ],
@@ -126,6 +127,7 @@ describe('Form Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'text',
+                        'name' => 'first_name',
                         'label' => ['en' => 'First Name', 'de' => 'Vorname'],
                         'required' => true,
                         'placeholder' => 'Enter your first name',
@@ -135,6 +137,7 @@ describe('Form Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'email',
+                        'name' => 'email',
                         'label' => ['en' => 'Email', 'de' => 'E-Mail'],
                         'required' => true,
                         'placeholder' => 'Enter your email',
@@ -144,6 +147,7 @@ describe('Form Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'textarea',
+                        'name' => 'message',
                         'label' => ['en' => 'Message', 'de' => 'Nachricht'],
                         'required' => false,
                         'rows' => 4,

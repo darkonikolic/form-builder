@@ -22,6 +22,7 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'text',
+                    'name' => 'test_field',
                     'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
                     'required' => true,
                 ],
@@ -52,6 +53,7 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'email',
+                    'name' => 'email_field',
                     'label' => ['en' => 'Email Field', 'de' => 'E-Mail Feld'],
                     'required' => false,
                 ],
@@ -78,6 +80,7 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'text',
+                    'name' => 'original_field',
                     'label' => ['en' => 'Original Label', 'de' => 'Ursprüngliches Etikett'],
                     'required' => false,
                 ],
@@ -86,6 +89,7 @@ describe('Field Management', function (): void {
             $field->update([
                 'configuration' => [
                     'type' => 'textarea',
+                    'name' => 'updated_field',
                     'label' => ['en' => 'Updated Label', 'de' => 'Aktualisiertes Etikett'],
                     'required' => true,
                     'rows' => 4,
@@ -116,6 +120,7 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'number',
+                    'name' => 'number_field',
                     'label' => ['en' => 'Number Field', 'de' => 'Zahlenfeld'],
                     'min' => 0,
                     'max' => 100,
@@ -143,8 +148,12 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
                 'configuration' => [
                     'type' => 'select',
+                    'name' => 'select_field',
                     'label' => ['en' => 'Select Field', 'de' => 'Auswahlfeld'],
-                    'options' => ['option1', 'option2'],
+                    'options' => [
+                        ['value' => 'option1', 'label' => ['en' => 'Option 1', 'de' => 'Option 1']],
+                        ['value' => 'option2', 'label' => ['en' => 'Option 2', 'de' => 'Option 2']],
+                    ],
                 ],
             ]);
 
@@ -166,6 +175,7 @@ describe('Field Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'text',
+                        'name' => 'first_name',
                         'label' => ['en' => 'First Name', 'de' => 'Vorname'],
                         'required' => true,
                     ],
@@ -174,6 +184,7 @@ describe('Field Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'email',
+                        'name' => 'email',
                         'label' => ['en' => 'Email', 'de' => 'E-Mail'],
                         'required' => true,
                     ],
@@ -182,6 +193,7 @@ describe('Field Management', function (): void {
                     'form_id' => $form->id,
                     'configuration' => [
                         'type' => 'textarea',
+                        'name' => 'message',
                         'label' => ['en' => 'Message', 'de' => 'Nachricht'],
                         'required' => false,
                     ],
@@ -218,6 +230,7 @@ describe('Field Management', function (): void {
 
             $textConfig = [
                 'type' => 'text',
+                'name' => 'full_name',
                 'label' => ['en' => 'Full Name', 'de' => 'Vollständiger Name'],
                 'required' => true,
                 'placeholder' => ['en' => 'Enter your full name', 'de' => 'Geben Sie Ihren vollständigen Namen ein'],
@@ -252,6 +265,7 @@ describe('Field Management', function (): void {
 
             $textareaConfig = [
                 'type' => 'textarea',
+                'name' => 'description',
                 'label' => ['en' => 'Description', 'de' => 'Beschreibung'],
                 'required' => false,
                 'placeholder' => ['en' => 'Enter description here', 'de' => 'Beschreibung hier eingeben'],
@@ -288,6 +302,7 @@ describe('Field Management', function (): void {
 
             $selectConfig = [
                 'type' => 'select',
+                'name' => 'country',
                 'label' => ['en' => 'Country', 'de' => 'Land'],
                 'required' => true,
                 'placeholder' => ['en' => 'Select a country', 'de' => 'Land auswählen'],
@@ -328,6 +343,7 @@ describe('Field Management', function (): void {
 
             $radioConfig = [
                 'type' => 'radio',
+                'name' => 'gender',
                 'label' => ['en' => 'Gender', 'de' => 'Geschlecht'],
                 'required' => true,
                 'options' => [
@@ -367,6 +383,7 @@ describe('Field Management', function (): void {
 
             $emailConfig = [
                 'type' => 'email',
+                'name' => 'email_address',
                 'label' => ['en' => 'Email Address', 'de' => 'E-Mail Adresse'],
                 'required' => true,
                 'placeholder' => ['en' => 'Enter your email address', 'de' => 'Geben Sie Ihre E-Mail Adresse ein'],
@@ -403,6 +420,7 @@ describe('Field Management', function (): void {
 
             $numberConfig = [
                 'type' => 'number',
+                'name' => 'age',
                 'label' => ['en' => 'Age', 'de' => 'Alter'],
                 'required' => true,
                 'placeholder' => ['en' => 'Enter your age', 'de' => 'Geben Sie Ihr Alter ein'],
@@ -441,6 +459,7 @@ describe('Field Management', function (): void {
 
             $complexConfig = [
                 'type' => 'select',
+                'name' => 'country_selection',
                 'label' => ['en' => 'Country Selection', 'de' => 'Länderauswahl'],
                 'required' => true,
                 'multiple' => false,
@@ -490,6 +509,285 @@ describe('Field Management', function (): void {
             // Test UI elements i18n
             $this->assertEquals('Choose your country', $retrievedField->configuration['ui']['placeholder']['en']);
             $this->assertEquals('Wählen Sie Ihr Land', $retrievedField->configuration['ui']['placeholder']['de']);
+        });
+    });
+
+    describe('Type-Specific Validation', function (): void {
+        it('validates that text fields can have text-specific validation rules', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Text Validation Test', 'de' => 'Text Validierung Test'],
+                'description' => ['en' => 'Testing text field validation', 'de' => 'Textfeld Validierung testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $field = Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'text',
+                    'name' => 'valid_text_field',
+                    'label' => ['en' => 'Text Field', 'de' => 'Textfeld'],
+                ],
+                'validation_rules' => [
+                    'required' => [
+                        'error_messages' => [
+                            'en' => 'This field is required',
+                            'de' => 'Dieses Feld ist erforderlich',
+                        ],
+                    ],
+                    'maxlength' => [
+                        'error_messages' => [
+                            'en' => 'Maximum length exceeded',
+                            'de' => 'Maximale Länge überschritten',
+                        ],
+                    ],
+                ],
+            ]);
+
+            $this->assertDatabaseHas('fields', [
+                'id' => $field->id,
+                'form_id' => $form->id,
+            ]);
+        });
+
+        it('validates that number fields can have number-specific validation rules', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Number Validation Test', 'de' => 'Zahlen Validierung Test'],
+                'description' => ['en' => 'Testing number field validation', 'de' => 'Zahlenfeld Validierung testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $field = Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'number',
+                    'name' => 'valid_number_field',
+                    'label' => ['en' => 'Number Field', 'de' => 'Zahlenfeld'],
+                ],
+                'validation_rules' => [
+                    'min' => [
+                        'error_messages' => [
+                            'en' => 'Value too low',
+                            'de' => 'Wert zu niedrig',
+                        ],
+                    ],
+                    'max' => [
+                        'error_messages' => [
+                            'en' => 'Value too high',
+                            'de' => 'Wert zu hoch',
+                        ],
+                    ],
+                ],
+            ]);
+
+            $this->assertDatabaseHas('fields', [
+                'id' => $field->id,
+                'form_id' => $form->id,
+            ]);
+        });
+
+        it('rejects field with invalid HTML attributes for type', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid HTML Test', 'de' => 'Ungültige HTML Test'],
+                'description' => ['en' => 'Testing invalid HTML attributes', 'de' => 'Ungültige HTML Attribute testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage("Attribute 'min' is not allowed for text-type fields. Allowed: maxlength, minlength, pattern, autocomplete, size, readonly, disabled, autofocus, spellcheck, placeholder");
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'text',
+                    'name' => 'invalid_html_field',
+                    'label' => ['en' => 'Text Field', 'de' => 'Textfeld'],
+                    'min' => 5, // Invalid HTML attribute for text type
+                ],
+            ]);
+        });
+
+        it('allows empty validation rules', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Empty Validation Test', 'de' => 'Leere Validierung Test'],
+                'description' => ['en' => 'Testing empty validation rules', 'de' => 'Leere Validierungsregeln testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $field = Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'text',
+                    'name' => 'no_validation_field',
+                    'label' => ['en' => 'Text Field', 'de' => 'Textfeld'],
+                ],
+                'validation_rules' => null,
+            ]);
+
+            $this->assertDatabaseHas('fields', [
+                'id' => $field->id,
+                'form_id' => $form->id,
+            ]);
+        });
+
+        it('rejects field without name attribute', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'No Name Test', 'de' => 'Kein Name Test'],
+                'description' => ['en' => 'Testing field without name', 'de' => 'Feld ohne Namen testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage("Field 'name' is required for all field types");
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'text',
+                    'label' => ['en' => 'Text Field', 'de' => 'Textfeld'],
+                ],
+            ]);
+        });
+
+        it('rejects number field with invalid min/max values', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid MinMax Test', 'de' => 'Ungültige MinMax Test'],
+                'description' => ['en' => 'Testing invalid min/max values', 'de' => 'Ungültige Min/Max Werte testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage('min must be less than max');
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'number',
+                    'name' => 'invalid_minmax_field',
+                    'label' => ['en' => 'Number Field', 'de' => 'Zahlenfeld'],
+                    'min' => 100,
+                    'max' => 50, // min > max
+                ],
+            ]);
+        });
+
+        it('rejects text field with invalid minlength/maxlength values', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid Length Test', 'de' => 'Ungültige Länge Test'],
+                'description' => ['en' => 'Testing invalid length values', 'de' => 'Ungültige Längenwerte testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage('minlength cannot be greater than maxlength');
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'text',
+                    'name' => 'invalid_length_field',
+                    'label' => ['en' => 'Text Field', 'de' => 'Textfeld'],
+                    'minlength' => 100,
+                    'maxlength' => 50, // minlength > maxlength
+                ],
+            ]);
+        });
+
+        it('rejects select field without options', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'No Options Test', 'de' => 'Keine Optionen Test'],
+                'description' => ['en' => 'Testing select without options', 'de' => 'Select ohne Optionen testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage('Options array is required for select/radio fields');
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'select',
+                    'name' => 'no_options_field',
+                    'label' => ['en' => 'Select Field', 'de' => 'Auswahlfeld'],
+                    // Missing options
+                ],
+            ]);
+        });
+
+        it('rejects select field with invalid option structure', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid Options Test', 'de' => 'Ungültige Optionen Test'],
+                'description' => ['en' => 'Testing invalid option structure', 'de' => 'Ungültige Optionenstruktur testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage("Option 0 must have both 'value' and 'label'");
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'select',
+                    'name' => 'invalid_options_field',
+                    'label' => ['en' => 'Select Field', 'de' => 'Auswahlfeld'],
+                    'options' => [
+                        ['value' => 'option1'], // Missing label
+                    ],
+                ],
+            ]);
+        });
+
+        it('rejects file field with invalid accept format', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid Accept Test', 'de' => 'Ungültige Accept Test'],
+                'description' => ['en' => 'Testing invalid accept format', 'de' => 'Ungültiges Accept Format testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage('Invalid accept type format: invalid-format');
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'file',
+                    'name' => 'invalid_accept_field',
+                    'label' => ['en' => 'File Field', 'de' => 'Dateifeld'],
+                    'accept' => 'invalid-format', // Invalid format
+                ],
+            ]);
+        });
+
+        it('rejects date field with invalid date format', function (): void {
+            $form = Form::create([
+                'name' => ['en' => 'Invalid Date Test', 'de' => 'Ungültige Datum Test'],
+                'description' => ['en' => 'Testing invalid date format', 'de' => 'Ungültiges Datumsformat testen'],
+                'is_active' => true,
+                'configuration' => ['locales' => ['en', 'de']],
+            ]);
+
+            $this->expectException(\Exception::class);
+            $this->expectExceptionMessage('Invalid date format for min/max values');
+
+            Field::create([
+                'form_id' => $form->id,
+                'configuration' => [
+                    'type' => 'date',
+                    'name' => 'invalid_date_field',
+                    'label' => ['en' => 'Date Field', 'de' => 'Datumfeld'],
+                    'min' => 'invalid-date',
+                    'max' => '2024-12-31',
+                ],
+            ]);
         });
     });
 });
