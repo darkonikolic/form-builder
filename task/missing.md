@@ -48,12 +48,12 @@
 
 ### **Phase 5: Form Builder API**
 
-- [ ] Create FormController with index method (list user forms)
-- [ ] Create FormController with store method (create new form)
-- [ ] Create FormController with show method (get single form)
-- [ ] Create FormController with update method (edit form)
-- [ ] Create FormController with destroy method (delete form)
-- [ ] Add form validation rules (title required, description optional)
+- [x] Create FormController with index method (list user forms)
+- [x] Create FormController with store method (create new form)
+- [x] Create FormController with show method (get single form)
+- [x] Create FormController with update method (edit form)
+- [x] Create FormController with destroy method (delete form)
+- [x] Add form validation rules (title required, description optional)
 - [ ] Test all FormController methods with Postman
 
 ### **Phase 6: Field Management API**
@@ -70,7 +70,7 @@
 
 ### **Phase 7: API Routes & Middleware**
 
-- [ ] Create API routes for forms in api.php
+- [x] Create API routes for forms in api.php
 - [ ] Create API routes for fields in api.php
 - [x] Add Sanctum middleware to API routes
 - [x] Test API authentication with Postman

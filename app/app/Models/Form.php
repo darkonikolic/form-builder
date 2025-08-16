@@ -5,12 +5,60 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Validation\ValidationException;
 
+/**
+ * @OA\Schema(
+ *     schema="Form",
+ *     title="Form",
+ *     description="Form model",
+ *
+ *     @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+ *     @OA\Property(property="user_id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001"),
+ *     @OA\Property(
+ *         property="name",
+ *         type="object",
+ *         description="Form name in multiple languages",
+ *         @OA\Property(property="en", type="string", example="Contact Form"),
+ *         @OA\Property(property="de", type="string", example="Kontaktformular")
+ *     ),
+ *     @OA\Property(
+ *         property="description",
+ *         type="object",
+ *         description="Form description in multiple languages",
+ *         @OA\Property(property="en", type="string", example="A contact form for customer inquiries"),
+ *         @OA\Property(property="de", type="string", example="Ein Kontaktformular für Kundenanfragen")
+ *     ),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(
+ *         property="configuration",
+ *         type="object",
+ *         description="Form configuration including locales",
+ *         @OA\Property(
+ *             property="locales",
+ *             type="array",
+ *
+ *             @OA\Items(type="string", enum={"en","de","it","fr"}),
+ *             example={"en","de"}
+ *         )
+ *     ),
+ *
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time"),
+ *     @OA\Property(
+ *         property="fields",
+ *         type="array",
+ *         description="Form fields",
+ *
+ *         @OA\Items(ref="#/components/schemas/Field")
+ *     )
+ * )
+ */
 class Form extends Model
 {
+    use HasFactory;
     use HasUuids;
 
     protected $casts = [
@@ -21,6 +69,7 @@ class Form extends Model
     ];
 
     protected $fillable = [
+        'user_id',
         'name',
         'description',
         'is_active',
@@ -31,6 +80,12 @@ class Form extends Model
     public function fields(): HasMany
     {
         return $this->hasMany(Field::class)->orderBy('order');
+    }
+
+    // Relationship with User model
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     // Validation before saving
@@ -52,33 +107,32 @@ class Form extends Model
         $validLocales = ['en', 'de', 'it', 'fr'];
         foreach ($locales as $locale) {
             if (!in_array($locale, $validLocales)) {
-                throw new ValidationException("Invalid locale: {$locale}");
+                throw new \Exception("Invalid locale: {$locale}");
             }
         }
 
-        // Validate if name and description are present for all locales
+        // Validate if name is present for all locales
         foreach ($locales as $locale) {
             if (!isset($this->name[$locale]) || empty($this->name[$locale])) {
-                throw new ValidationException("Missing name for locale: {$locale}");
-            }
-            if (!isset($this->description[$locale]) || empty($this->description[$locale])) {
-                throw new ValidationException("Missing description for locale: {$locale}");
+                throw new \Exception("Missing name for locale: {$locale}");
             }
         }
 
-        // Validate that no extra locales exist in name/description beyond registered ones
+        // Validate that no extra locales exist in name beyond registered ones
         $nameLocales = array_keys($this->name ?? []);
-        $descriptionLocales = array_keys($this->description ?? []);
-
         foreach ($nameLocales as $locale) {
             if (!in_array($locale, $locales)) {
-                throw new ValidationException("Name has unregistered locale: {$locale}. Only registered locales are allowed.");
+                throw new \Exception("Name has unregistered locale: {$locale}. Only registered locales are allowed.");
             }
         }
 
-        foreach ($descriptionLocales as $locale) {
-            if (!in_array($locale, $locales)) {
-                throw new ValidationException("Description has unregistered locale: {$locale}. Only registered locales are allowed.");
+        // Validate description if provided (optional)
+        if ($this->description) {
+            $descriptionLocales = array_keys($this->description);
+            foreach ($descriptionLocales as $locale) {
+                if (!in_array($locale, $locales)) {
+                    throw new \Exception("Description has unregistered locale: {$locale}. Only registered locales are allowed.");
+                }
             }
         }
     }

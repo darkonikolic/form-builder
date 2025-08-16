@@ -5,13 +5,63 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @OA\Schema(
+ *     schema="Field",
+ *     title="Field",
+ *     description="Form field model",
+ *
+ *     @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440002"),
+ *     @OA\Property(property="form_id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+ *     @OA\Property(property="order", type="integer", example=1),
+ *     @OA\Property(
+ *         property="configuration",
+ *         type="object",
+ *         description="Field configuration including type, name, label, and HTML attributes",
+ *         @OA\Property(property="type", type="string", enum={"text","email","password","number","textarea","select","checkbox","radio","file","date","time","datetime-local","url","tel","search","color","range","hidden"}, example="text"),
+ *         @OA\Property(
+ *             property="name",
+ *             type="string",
+ *             description="Field name attribute",
+ *             example="first_name"
+ *         ),
+ *         @OA\Property(
+ *             property="label",
+ *             type="object",
+ *             description="Field label in multiple languages",
+ *             @OA\Property(property="en", type="string", example="First Name"),
+ *             @OA\Property(property="de", type="string", example="Vorname")
+ *         ),
+ *         @OA\Property(property="required", type="boolean", example=true),
+ *         @OA\Property(property="class", type="string", example="form-control"),
+ *         @OA\Property(property="style", type="string", example="width: 100%"),
+ *         @OA\Property(
+ *             property="placeholder",
+ *             type="object",
+ *             description="Placeholder text in multiple languages",
+ *             @OA\Property(property="en", type="string", example="Enter your first name"),
+ *             @OA\Property(property="de", type="string", example="Geben Sie Ihren Vornamen ein")
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="validation_rules",
+ *         type="object",
+ *         description="Field validation rules",
+ *         nullable=true
+ *     ),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class Field extends Model
 {
+    use HasFactory;
     use HasUuids;
 
     protected $casts = [

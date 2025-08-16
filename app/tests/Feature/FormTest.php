@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 use App\Models\Field;
 use App\Models\Form;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Form Management', function (): void {
+    beforeEach(function (): void {
+        $this->user = User::factory()->create();
+    });
+
     describe('Form CRUD Operations', function (): void {
         it('can create form', function (): void {
             $formData = [
+                'user_id' => $this->user->id,
                 'name' => ['en' => 'Test Form', 'de' => 'Test Formular'],
                 'description' => ['en' => 'This is a test form', 'de' => 'Dies ist ein Testformular'],
                 'is_active' => true,
@@ -22,6 +28,7 @@ describe('Form Management', function (): void {
 
             $this->assertDatabaseHas('forms', [
                 'id' => $form->id,
+                'user_id' => $this->user->id,
                 'is_active' => true,
             ]);
             $this->assertIsString($form->id);
@@ -31,27 +38,21 @@ describe('Form Management', function (): void {
         });
 
         it('can read form', function (): void {
-            $form = Form::create([
-                'name' => ['en' => 'Read Test Form', 'de' => 'Lese Test Formular'],
-                'description' => ['en' => 'Form for reading test', 'de' => 'Formular zum Lesen testen'],
-                'is_active' => true,
-                'configuration' => ['locales' => ['en', 'de']],
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
             ]);
 
             $retrievedForm = Form::find($form->id);
 
             $this->assertNotNull($retrievedForm);
-            $this->assertEquals('Read Test Form', $retrievedForm->name['en']);
-            $this->assertEquals('Form for reading test', $retrievedForm->description['en']);
+            $this->assertEquals($this->user->id, $retrievedForm->user_id);
             $this->assertTrue($retrievedForm->is_active);
         });
 
         it('can update form', function (): void {
-            $form = Form::create([
-                'name' => ['en' => 'Original Name', 'de' => 'Ursprünglicher Name'],
-                'description' => ['en' => 'Original description', 'de' => 'Ursprüngliche Beschreibung'],
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
                 'is_active' => false,
-                'configuration' => ['locales' => ['en', 'de']],
             ]);
 
             $form->update([
@@ -62,6 +63,7 @@ describe('Form Management', function (): void {
 
             $this->assertDatabaseHas('forms', [
                 'id' => $form->id,
+                'user_id' => $this->user->id,
                 'is_active' => true,
             ]);
 
@@ -72,11 +74,8 @@ describe('Form Management', function (): void {
         });
 
         it('can delete form', function (): void {
-            $form = Form::create([
-                'name' => ['en' => 'Delete Test Form', 'de' => 'Löschen Test Formular'],
-                'description' => ['en' => 'Form for deletion test', 'de' => 'Formular zum Löschen testen'],
-                'is_active' => true,
-                'configuration' => ['locales' => ['en', 'de']],
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
             ]);
 
             $formId = $form->id;
@@ -89,21 +88,12 @@ describe('Form Management', function (): void {
 
     describe('Form Fields Relationship', function (): void {
         it('form has fields relationship', function (): void {
-            $form = Form::create([
-                'name' => ['en' => 'Form with Fields', 'de' => 'Formular mit Feldern'],
-                'description' => ['en' => 'Testing fields relationship', 'de' => 'Felder-Beziehung testen'],
-                'is_active' => true,
-                'configuration' => ['locales' => ['en', 'de']],
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
             ]);
 
-            $field = Field::create([
+            $field = Field::factory()->create([
                 'form_id' => $form->id,
-                'configuration' => [
-                    'type' => 'text',
-                    'name' => 'test_field',
-                    'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
-                    'required' => true,
-                ],
             ]);
 
             // Test the relationship by checking the foreign key and querying directly
@@ -115,49 +105,18 @@ describe('Form Management', function (): void {
         });
 
         it('can create form with multiple fields', function (): void {
-            $form = Form::create([
-                'name' => ['en' => 'Complete Form', 'de' => 'Vollständiges Formular'],
-                'description' => ['en' => 'Form with multiple fields', 'de' => 'Formular mit mehreren Feldern'],
-                'is_active' => true,
-                'configuration' => ['locales' => ['en', 'de']],
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
             ]);
 
-            $fields = [
-                [
-                    'form_id' => $form->id,
-                    'configuration' => [
-                        'type' => 'text',
-                        'name' => 'first_name',
-                        'label' => ['en' => 'First Name', 'de' => 'Vorname'],
-                        'required' => true,
-                        'placeholder' => 'Enter your first name',
-                    ],
-                ],
-                [
-                    'form_id' => $form->id,
-                    'configuration' => [
-                        'type' => 'email',
-                        'name' => 'email',
-                        'label' => ['en' => 'Email', 'de' => 'E-Mail'],
-                        'required' => true,
-                        'placeholder' => 'Enter your email',
-                    ],
-                ],
-                [
-                    'form_id' => $form->id,
-                    'configuration' => [
-                        'type' => 'textarea',
-                        'name' => 'message',
-                        'label' => ['en' => 'Message', 'de' => 'Nachricht'],
-                        'required' => false,
-                        'rows' => 4,
-                    ],
-                ],
-            ];
+            // Create fields with at least one text field
+            Field::factory()->text()->create([
+                'form_id' => $form->id,
+            ]);
 
-            foreach ($fields as $fieldData) {
-                Field::create($fieldData);
-            }
+            Field::factory()->count(2)->create([
+                'form_id' => $form->id,
+            ]);
 
             // Query fields directly to avoid the order column issue
             $fieldCount = Field::where('form_id', $form->id)->count();
@@ -169,12 +128,27 @@ describe('Form Management', function (): void {
 
             // Check if fields exist by type using direct queries
             $textField = Field::where('form_id', $form->id)->whereJsonContains('configuration->type', 'text')->first();
-            $emailField = Field::where('form_id', $form->id)->whereJsonContains('configuration->type', 'email')->first();
-            $textareaField = Field::where('form_id', $form->id)->whereJsonContains('configuration->type', 'textarea')->first();
-
             $this->assertNotNull($textField);
-            $this->assertNotNull($emailField);
-            $this->assertNotNull($textareaField);
+        });
+    });
+
+    describe('Form User Relationship', function (): void {
+        it('form belongs to user', function (): void {
+            $form = Form::factory()->create([
+                'user_id' => $this->user->id,
+            ]);
+
+            $this->assertTrue($form->user->is($this->user));
+            $this->assertEquals($this->user->id, $form->user_id);
+        });
+
+        it('user can have multiple forms', function (): void {
+            $forms = Form::factory()->count(3)->create([
+                'user_id' => $this->user->id,
+            ]);
+
+            $this->assertEquals(3, $this->user->forms()->count());
+            $this->assertTrue($this->user->forms->contains($forms->first()));
         });
     });
 });

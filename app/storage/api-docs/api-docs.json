@@ -209,7 +209,7 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             }
@@ -356,18 +356,897 @@
                     }
                 }
             }
+        },
+        "/api/forms/{id}": {
+            "get": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Get a specific form",
+                "description": "Retrieve a specific form by ID for the authenticated user",
+                "operationId": "getForm",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Form ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Form retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Form"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form retrieved successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Form not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to retrieve form"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Update a specific form",
+                "description": "Update a specific form by ID for the authenticated user",
+                "operationId": "updateForm",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Form ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "properties": {
+                                            "en": {
+                                                "type": "string",
+                                                "maxLength": 255,
+                                                "example": "Updated Contact Form"
+                                            },
+                                            "de": {
+                                                "type": "string",
+                                                "maxLength": 255,
+                                                "example": "Aktualisiertes Kontaktformular"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "description": {
+                                        "properties": {
+                                            "en": {
+                                                "type": "string",
+                                                "maxLength": 1000,
+                                                "example": "Updated contact form description"
+                                            },
+                                            "de": {
+                                                "type": "string",
+                                                "maxLength": 1000,
+                                                "example": "Aktualisierte Kontaktformular-Beschreibung"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "configuration": {
+                                        "properties": {
+                                            "locales": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "en",
+                                                        "de",
+                                                        "it",
+                                                        "fr"
+                                                    ]
+                                                },
+                                                "example": [
+                                                    "en",
+                                                    "de",
+                                                    "it"
+                                                ]
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Form updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Form"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Form not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to update form"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Delete a specific form",
+                "description": "Delete a specific form by ID for the authenticated user. All associated fields will be deleted automatically.",
+                "operationId": "deleteForm",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Form ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Form deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Form not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to delete form"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/forms": {
+            "get": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Get all forms for authenticated user",
+                "description": "Retrieve a list of all forms belonging to the authenticated user",
+                "operationId": "getForms",
+                "responses": {
+                    "200": {
+                        "description": "Forms retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Form"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Forms retrieved successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to retrieve forms"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Create a new form",
+                "description": "Create a new form for the authenticated user",
+                "operationId": "createForm",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "configuration"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "required": [
+                                            "en",
+                                            "de"
+                                        ],
+                                        "properties": {
+                                            "en": {
+                                                "type": "string",
+                                                "maxLength": 255,
+                                                "example": "Contact Form"
+                                            },
+                                            "de": {
+                                                "type": "string",
+                                                "maxLength": 255,
+                                                "example": "Kontaktformular"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "description": {
+                                        "properties": {
+                                            "en": {
+                                                "type": "string",
+                                                "maxLength": 1000,
+                                                "example": "A contact form for customer inquiries"
+                                            },
+                                            "de": {
+                                                "type": "string",
+                                                "maxLength": 1000,
+                                                "example": "Ein Kontaktformular für Kundenanfragen"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "configuration": {
+                                        "required": [
+                                            "locales"
+                                        ],
+                                        "properties": {
+                                            "locales": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "en",
+                                                        "de",
+                                                        "it",
+                                                        "fr"
+                                                    ]
+                                                },
+                                                "example": [
+                                                    "en",
+                                                    "de"
+                                                ]
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Form created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Form"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Form created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to create form"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
+        "schemas": {
+            "Field": {
+                "title": "Field",
+                "description": "Form field model",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440002"
+                    },
+                    "form_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "configuration": {
+                        "description": "Field configuration including type, name, label, and HTML attributes",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "text",
+                                    "email",
+                                    "password",
+                                    "number",
+                                    "textarea",
+                                    "select",
+                                    "checkbox",
+                                    "radio",
+                                    "file",
+                                    "date",
+                                    "time",
+                                    "datetime-local",
+                                    "url",
+                                    "tel",
+                                    "search",
+                                    "color",
+                                    "range",
+                                    "hidden"
+                                ],
+                                "example": "text"
+                            },
+                            "name": {
+                                "description": "Field name attribute",
+                                "type": "string",
+                                "example": "first_name"
+                            },
+                            "label": {
+                                "description": "Field label in multiple languages",
+                                "properties": {
+                                    "en": {
+                                        "type": "string",
+                                        "example": "First Name"
+                                    },
+                                    "de": {
+                                        "type": "string",
+                                        "example": "Vorname"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "required": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "class": {
+                                "type": "string",
+                                "example": "form-control"
+                            },
+                            "style": {
+                                "type": "string",
+                                "example": "width: 100%"
+                            },
+                            "placeholder": {
+                                "description": "Placeholder text in multiple languages",
+                                "properties": {
+                                    "en": {
+                                        "type": "string",
+                                        "example": "Enter your first name"
+                                    },
+                                    "de": {
+                                        "type": "string",
+                                        "example": "Geben Sie Ihren Vornamen ein"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "validation_rules": {
+                        "description": "Field validation rules",
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Form": {
+                "title": "Form",
+                "description": "Form model",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440001"
+                    },
+                    "name": {
+                        "description": "Form name in multiple languages",
+                        "properties": {
+                            "en": {
+                                "type": "string",
+                                "example": "Contact Form"
+                            },
+                            "de": {
+                                "type": "string",
+                                "example": "Kontaktformular"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "description": {
+                        "description": "Form description in multiple languages",
+                        "properties": {
+                            "en": {
+                                "type": "string",
+                                "example": "A contact form for customer inquiries"
+                            },
+                            "de": {
+                                "type": "string",
+                                "example": "Ein Kontaktformular für Kundenanfragen"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "configuration": {
+                        "description": "Form configuration including locales",
+                        "properties": {
+                            "locales": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "en",
+                                        "de",
+                                        "it",
+                                        "fr"
+                                    ]
+                                },
+                                "example": [
+                                    "en",
+                                    "de"
+                                ]
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "fields": {
+                        "description": "Form fields",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Field"
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "bearerFormat": "JWT",
-                "scheme": "bearer"
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
             }
         }
     },
     "tags": [
+        {
+            "name": "Forms",
+            "description": "Form management endpoints"
+        },
         {
             "name": "Authentication",
             "description": "Authentication"

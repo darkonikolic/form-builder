@@ -29,10 +29,11 @@ use Illuminate\Support\Facades\Validator;
  * )
  *
  * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
+ *     securityScheme="sanctum",
+ *     type="apiKey",
+ *     name="Authorization",
+ *     in="header",
+ *     description="Enter token in format (Bearer <token>)"
  * )
  */
 class AuthController extends Controller
@@ -158,7 +159,7 @@ class AuthController extends Controller
      *     summary="User logout",
      *     description="Logout user and invalidate access token",
      *     tags={"Authentication"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"sanctum":{}}},
      *
      *     @OA\Response(
      *         response=200,
