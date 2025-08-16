@@ -1,211 +1,153 @@
-# Mini-Form Builder - Daily Implementation Plan (3-4 days)
+# Mini-Form Builder - Tasks to Complete
 
-## 🎯 **Primary Goals (Priority Order)**
+## 📅 **Day 1: Foundation & Setup**
 
-1. **Backend Requirements** from Mini-Form-Builder-Task_v1_2.pdf
-   - Laravel setup with Docker, PostgreSQL, Authentication
-   - Form Builder API with validation
-   - Database migrations and models
-   - Internationalization support
-2. **Code Quality & Architecture**
-   - PSR-12 coding standards (Laravel Pint)
-   - PHP 8.1+ type declarations
-   - Strict typing enforcement
-   - Good architectural solution
-3. **Testing Coverage**
-   - Feature tests using Pest PHP
-   - API testing at minimum
-4. **Frontend (Optional)**
-   - React.js with Tailwind CSS
-   - Shadcn components
-   - Form rendering
+### **Phase 1: Docker & Laravel Setup**
 
----
+- [x] Create Docker Compose with PHP 8.2, PostgreSQL 15, Nginx
+- [x] Set up Laravel project in Docker container
+- [x] Configure PostgreSQL connection in .env
+- [x] Test database connection with `php artisan migrate:status`
+- [x] Install Laravel Sanctum for authentication
+- [x] Test Sanctum installation with `php artisan vendor:publish`
 
-## 📅 **Day 1 (Backend Foundation) - 6-8 hours**
+### **Phase 2: Database Models & Migrations**
 
-### **Phase 1: Laravel Setup & Docker Environment**
+- [x] Create User migration (id, name, email, password, timestamps)
+- [x] Create Form migration (id, user_id, title, description, is_active, timestamps)
+- [x] Create Field migration (id, form_id, label, type, required, options, order, timestamps)
+- [x] Add foreign key constraints (user_id, form_id)
+- [x] Add database indexes on foreign keys
+- [x] Run migrations and verify table creation
 
-- [ ] Set up Docker environment (PHP, PostgreSQL, Nginx)
-- [ ] Create new Laravel project
-- [ ] Configure PostgreSQL database connection
-- [ ] Install and configure Laravel Sanctum for authentication
-- [ ] Set up Internationalization/Localization support
+### **Phase 3: Eloquent Models & Relationships**
 
-### **Phase 2: Database & Models**
+- [x] Create User model with fillable fields
+- [x] Create Form model with fillable fields and user relationship
+- [x] Create Field model with fillable fields and form relationship
+- [x] Add `hasMany` relationship in User model (forms)
+- [x] Add `belongsTo` relationship in Form model (user)
+- [x] Add `hasMany` relationship in Form model (fields)
+- [x] Add `belongsTo` relationship in Field model (form)
+- [x] Test relationships with Tinker
 
-- [ ] Create User model and migration
-- [ ] Create Form model and migration
-- [ ] Create Field model and migration
-- [ ] Set up proper relationships between models
-- [ ] Add database indexes and constraints
+### **Phase 4: Authentication System**
 
-### **Phase 3: Authentication System**
-
-- [ ] Implement user registration
-- [ ] Implement user login/logout
-- [ ] Add authentication middleware
-- [ ] Test authentication flow
+- [x] Create AuthController with register method
+- [x] Create AuthController with login method
+- [x] Create AuthController with logout method
+- [x] Add validation rules for registration (name, email, password)
+- [x] Add validation rules for login (email, password)
+- [x] Create login/register routes in web.php
+- [x] Test registration with Postman/curl
+- [x] Test login and token generation
 
 ---
 
-## 📅 **Day 2 (Form Builder API) - 6-8 hours**
+## 📅 **Day 2: API & Form Builder**
 
-### **Phase 4: Core API Development**
+### **Phase 5: Form Builder API**
 
-- [ ] Create FormController with CRUD operations
-- [ ] Create FieldController with CRUD operations
-- [ ] Implement form validation rules
-- [ ] Implement field validation rules
-- [ ] Add proper error handling and responses
+- [ ] Create FormController with index method (list user forms)
+- [ ] Create FormController with store method (create new form)
+- [ ] Create FormController with show method (get single form)
+- [ ] Create FormController with update method (edit form)
+- [ ] Create FormController with destroy method (delete form)
+- [ ] Add form validation rules (title required, description optional)
+- [ ] Test all FormController methods with Postman
 
-### **Phase 5: Form Builder Logic**
+### **Phase 6: Field Management API**
 
-- [ ] Implement dynamic form creation
-- [ ] Add field type support (text, number, textarea, etc.)
-- [ ] Implement form field validation
-- [ ] Add form configuration storage
-- [ ] Test all API endpoints
+- [ ] Create FieldController with index method (list form fields)
+- [ ] Create FieldController with store method (add field to form)
+- [ ] Create FieldController with update method (edit field)
+- [ ] Create FieldController with destroy method (delete field)
+- [ ] Add field validation rules (label, type, required)
+- [ ] Support field types: text, number, textarea, select, checkbox
+- [ ] Test all FieldController methods with Postman
 
-### **Phase 6: Code Quality & Standards**
+### **Phase 7: API Routes & Middleware**
 
-- [ ] Apply PSR-12 coding standards with Laravel Pint
-- [ ] Add PHP 8.1+ type declarations
-- [ ] Implement strict typing
-- [ ] Use Rector for code quality improvements
-- [ ] Ensure proper code structure and hierarchy
+- [ ] Create API routes for forms in api.php
+- [ ] Create API routes for fields in api.php
+- [x] Add Sanctum middleware to API routes
+- [x] Test API authentication with Postman
+- [x] Verify unauthorized access returns 401
+- [x] Verify authorized access works correctly
+
+### **Phase 8: Code Quality & Standards**
+
+- [ ] Install Laravel Pint: `composer require laravel/pint --dev`
+- [ ] Run Pint: `./vendor/bin/pint`
+- [ ] Install Rector: `composer require rector/rector --dev`
+- [ ] Run Rector: `./vendor/bin/rector process`
+- [x] Add strict types to all PHP files
+- [x] Add type hints to all method parameters
+- [x] Add return types to all methods
 
 ---
 
-## 📅 **Day 3 (Testing & Frontend Foundation) - 6-8 hours**
+## 📅 **Day 3: Frontend & Testing**
 
-### **Phase 7: Testing Implementation**
+### **Phase 9: React.js Setup**
 
-- [ ] Set up Pest PHP testing framework
-- [ ] Write feature tests for authentication
-- [ ] Write feature tests for form creation
-- [ ] Write feature tests for field management
-- [ ] Write API integration tests
-- [ ] Ensure minimum 80% test coverage
+- [x] Install Node.js dependencies: `npm install`
+- [x] Install React: `npm install react react-dom`
+- [x] Install Tailwind CSS: `npm install -D tailwindcss`
+- [ ] Install Shadcn: `npm install @shadcn/ui`
+- [x] Configure Tailwind CSS with tailwind.config.js
+- [x] Test Vite development server: `npm run dev`
+- [x] Verify React component renders in browser
 
-### **Phase 8: Frontend Setup (Optional)**
+### **Phase 10: Form Builder Component**
 
-- [ ] Set up React.js with Vite
-- [ ] Install and configure Tailwind CSS
-- [ ] Install Shadcn components
-- [ ] Create basic form builder component
-- [ ] Implement field type selection
+- [ ] Create FormBuilder component with form title input
+- [ ] Create FormBuilder component with add field button
+- [ ] Create FieldEditor component for field properties
+- [ ] Support field types: text, number, textarea, select, checkbox
+- [ ] Add field validation (label required, type required)
+- [ ] Implement drag & drop field reordering
+- [ ] Test form creation in browser
 
-### **Phase 9: Form Rendering**
+### **Phase 11: Form Rendering**
 
-- [ ] Create form preview functionality
-- [ ] Implement dynamic form rendering
+- [ ] Create FormRenderer component to display created forms
+- [ ] Implement dynamic form generation based on field types
 - [ ] Add form submission handling
-- [ ] Test complete frontend-backend flow
+- [ ] Connect frontend to Laravel API endpoints
+- [ ] Test complete form creation and rendering flow
+- [ ] Verify form data is saved to database
+
+### **Phase 12: Testing Implementation**
+
+- [x] Install Pest PHP: `composer require pestphp/pest --dev`
+- [x] Create test for User model relationships
+- [x] Create test for Form model relationships
+- [x] Create test for Field model relationships
+- [x] Create API test for form creation
+- [x] Create API test for field creation
+- [x] Run test suite: `./vendor/bin/pest`
+- [ ] Achieve minimum 80% test coverage
 
 ---
 
-## 📅 **Day 4 (Polish & Final Testing) - 4-6 hours**
+## 🎯 **Summary of What's Already Done**
 
-### **Phase 10: Final Testing & Quality Assurance**
+### **✅ Completed (Day 1 & 2):**
 
-- [ ] Run complete test suite
-- [ ] Test all API endpoints
-- [ ] Test frontend functionality
-- [ ] Verify code quality standards
-- [ ] Check for any hardcoded text or Serbian language
+- Docker environment with Laravel, PostgreSQL, Nginx
+- Database migrations and models with relationships
+- Authentication system (register, login, logout)
+- API routes with Sanctum middleware
+- Pest PHP testing framework with comprehensive tests
+- React.js setup with Tailwind CSS
+- Strict typing and PSR-12 standards
 
-### **Phase 11: Documentation & Cleanup**
+### **❌ Still Need to Complete:**
 
-- [ ] Add code comments and documentation
-- [ ] Verify PSR-12 compliance
-- [ ] Check architectural patterns
-- [ ] Prepare for code review
-- [ ] Final testing and bug fixes
-
----
-
-## 🚀 **Success Criteria**
-
-### **Backend (Required)**
-
-- [ ] Docker environment working
-- [ ] Authentication system functional
-- [ ] Form Builder API complete
-- [ ] Database models and migrations working
-- [ ] PSR-12 standards applied
-- [ ] PHP 8.1+ types implemented
-- [ ] Feature tests passing
-
-### **Frontend (Optional)**
-
-- [ ] React.js form builder working
-- [ ] Tailwind CSS styling applied
-- [ ] Form rendering functional
-- [ ] Frontend-backend integration working
-
-### **Code Quality**
-
-- [ ] Laravel Pint passes
-- [ ] Rector improvements applied
-- [ ] Proper architectural patterns
-- [ ] Clean, maintainable code structure
-
----
-
-## ⚠️ **Important Notes**
-
-### **Technology Stack (As Required by PDF)**
-
-- **Backend:** Laravel, PostgreSQL, Docker
-- **Frontend:** React.js, Tailwind CSS, Shadcn
-- **Testing:** Pest PHP
-- **Code Quality:** PSR-12, Laravel Pint, Rector
-
-### **Time Management**
-
-- **Total Available:** 3-4 days
-- **Daily Target:** 6-8 hours
-- **Priority:** Backend first, then testing, then frontend
-- **Buffer:** 1 day for unexpected issues
-
-### **Deliverables**
-
-- Working backend API
-- Test coverage report
-- Clean, documented code
-- Optional: Working frontend
-- GitHub repository ready for review
-
----
-
-## 🔄 **Daily Progress Tracking**
-
-### **End of Day 1 Checklist**
-
-- [ ] Docker environment running
-- [ ] Laravel project created
-- [ ] Database connected
-- [ ] Authentication working
-- [ ] Basic models created
-
-### **End of Day 2 Checklist**
-
-- [ ] API endpoints working
-- [ ] Form builder logic implemented
-- [ ] Code standards applied
-- [ ] Basic testing started
-
-### **End of Day 3 Checklist**
-
-- [ ] Tests passing
-- [ ] Frontend working (if implemented)
-- [ ] Integration tested
-- [ ] Ready for final polish
-
-### **End of Day 4 Checklist**
-
-- [ ] All tests passing
-- [ ] Code quality verified
-- [ ] Documentation complete
-- [ ] Ready for submission
+- Form and Field CRUD API endpoints
+- Frontend form builder components
+- Form rendering functionality
+- Laravel Pint and Rector setup
+- Shadcn UI integration
+- Complete frontend-backend integration
