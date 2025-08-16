@@ -1,0 +1,13 @@
+
+# Ignore storage directory with symbolic links
+storage/
+public/storage/
+
+# Ignore other problematic directories
+vendor/
+node_modules/
+bootstrap/cache/
+storage/logs/
+storage/framework/
+storage/app/
+

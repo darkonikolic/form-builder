@@ -5,8 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+        "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx",
+        "lint:fix": "eslint resources/js --ext .js,.jsx,.ts,.tsx --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "style": "npm run lint && npm run format:check"

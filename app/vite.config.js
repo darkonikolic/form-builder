@@ -25,5 +25,8 @@ export default defineConfig({
             protocol: 'ws',
             clientPort: 3000,
         },
+        watch: {
+            ignored: ['**/storage/**', '**/public/storage/**'],
+        },
     },
 });

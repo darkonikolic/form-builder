@@ -30,6 +30,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - php
+      - node
     networks:
       - app-network
 
@@ -40,9 +41,9 @@ services:
       dockerfile: ../docker/node/Dockerfile
     volumes:
       - ../app:/app
-      - /app/node_modules
+      - node_modules:/app/node_modules
     working_dir: /app
-    command: npm run dev
+    command: sh -c "npm install && npm run dev"
     ports:
       - "${NODE_DEV_PORT}:3000"
     networks:
@@ -92,6 +93,7 @@ services:
 volumes:
   postgres_data:
   pgadmin_data:
+  node_modules:
 
 networks:
   app-network:
