@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Form;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
@@ -241,7 +242,7 @@ test('user cannot show another users form', function (): void {
 
 test('user gets 401 without authentication', function (): void {
     // Test without any authentication - should get 401
-    auth()->forgetGuards();
+    Auth::forgetGuards();
 
     $response = $this->withHeaders([
         'Accept' => 'application/json',
@@ -255,7 +256,7 @@ test('user gets 401 without authentication', function (): void {
 
 test('user gets 401 with invalid token', function (): void {
     // Test with invalid token - should get 401
-    auth()->forgetGuards();
+    Auth::forgetGuards();
 
     $response = $this->withHeaders([
         'Accept' => 'application/json',
@@ -270,7 +271,7 @@ test('user gets 401 with invalid token', function (): void {
 
 test('user gets 401 when trying to access protected endpoint without auth', function (): void {
     // Test without authentication - should get 401
-    auth()->forgetGuards();
+    Auth::forgetGuards();
 
     $response = $this->withHeaders([
         'Accept' => 'application/json',
