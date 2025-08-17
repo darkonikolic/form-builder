@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FieldController;
 use App\Http\Controllers\FormController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,4 +28,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Form management routes
     Route::apiResource('forms', FormController::class);
+
+    // Field management routes (nested under forms)
+    Route::apiResource('forms.fields', FieldController::class);
 });
