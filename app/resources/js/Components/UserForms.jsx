@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Trash2, ExternalLink, Plus, Loader2 } from 'lucide-react';
+import { Trash2, ExternalLink, Plus, Loader2, Edit } from 'lucide-react';
 import CreateFormDialog from '@/Components/CreateFormDialog';
 
 export default function UserForms({ onOpenForm }) {
@@ -20,6 +20,11 @@ export default function UserForms({ onOpenForm }) {
     const [deleteDialog, setDeleteDialog] = useState({
         isOpen: false,
         formId: null,
+        formName: '',
+    });
+
+    const [demoDialog, setDemoDialog] = useState({
+        isOpen: false,
         formName: '',
     });
 
@@ -134,9 +139,9 @@ export default function UserForms({ onOpenForm }) {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => window.location.reload()}
+                        onClick={fetchUserForms}
                         className="flex items-center rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                        title="Reload page"
+                        title="Reload forms"
                     >
                         <svg
                             className="w-4 h-4"
@@ -255,12 +260,28 @@ export default function UserForms({ onOpenForm }) {
                                     <div className="flex gap-2 pt-2">
                                         <Button
                                             onClick={() =>
-                                                handleOpenForm(form.id)
+                                                setDemoDialog({
+                                                    isOpen: true,
+                                                    formName:
+                                                        form.name?.en ||
+                                                        form.name?.de ||
+                                                        'Untitled Form',
+                                                })
                                             }
                                             className="flex-1 bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600"
                                         >
                                             <ExternalLink className="h-4 w-4 mr-2" />
                                             Open
+                                        </Button>
+                                        <Button
+                                            onClick={() =>
+                                                handleOpenForm(form.id)
+                                            }
+                                            variant="outline"
+                                            className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                                        >
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit
                                         </Button>
                                         <Button
                                             onClick={() =>
@@ -335,6 +356,65 @@ export default function UserForms({ onOpenForm }) {
                                 className="bg-red-600 hover:bg-red-700 text-white"
                             >
                                 Delete Form
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Demo Dialog */}
+            {demoDialog.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+                        <div className="flex items-center mb-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg
+                                    className="h-6 w-6 text-blue-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                            </div>
+                            <div className="ml-4">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Demo Project
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                    This is a demonstration version
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <p className="text-gray-700 mb-3">
+                                This is a demo project. In the full version, you
+                                would be able to see the generated form layout
+                                and test data entry here.
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                However, since you haven't paid for the premium
+                                version yet, this feature is not available.
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={() =>
+                                    setDemoDialog({
+                                        isOpen: false,
+                                        formName: '',
+                                    })
+                                }
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                Got it
                             </Button>
                         </div>
                     </div>
