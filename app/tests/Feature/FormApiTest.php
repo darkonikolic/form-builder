@@ -401,10 +401,9 @@ test('user cannot update form with invalid data', function (): void {
     $invalidData = [
         'name' => [
             'en' => 'Updated Contact Form',
-            // Missing 'de' locale
         ],
         'configuration' => [
-            'locales' => ['en'], // Update locales to match the new name structure
+            'locales' => ['en', 'de'],
         ],
     ];
 

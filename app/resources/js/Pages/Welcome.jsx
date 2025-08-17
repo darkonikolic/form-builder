@@ -16,7 +16,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 
-export default function Welcome() {
+export default function Welcome({ onLoginClick, onRegisterClick }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleOpenDialog = () => {
@@ -39,17 +39,43 @@ export default function Welcome() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="text-center space-y-2">
+                    <div className="text-center space-y-4">
                         <p className="text-sm text-slate-500">
                             Ready to build amazing forms?
                         </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                                onClick={onLoginClick}
+                                className="flex-1 bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105"
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                onClick={onRegisterClick}
+                                variant="outline"
+                                className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50 font-medium py-2 px-6 rounded-lg transition-all duration-200 hover:shadow-lg"
+                            >
+                                Register
+                            </Button>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-slate-300" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-slate-500">
+                                    Or
+                                </span>
+                            </div>
+                        </div>
                         <Dialog open={isOpen} onOpenChange={setIsOpen}>
                             <DialogTrigger asChild>
                                 <Button
                                     onClick={handleOpenDialog}
-                                    className="w-full bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105"
+                                    variant="ghost"
+                                    className="w-full text-slate-600 hover:text-slate-800 hover:bg-slate-50"
                                 >
-                                    Get Started
+                                    Learn More
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl">

@@ -370,16 +370,49 @@ class FormController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|array',
-                'name.en' => 'required|string|max:255',
-                'name.de' => 'required|string|max:255',
+                'name.*' => 'required|string|max:255',
                 'description' => 'nullable|array',
-                'description.en' => 'nullable|string|max:1000',
-                'description.de' => 'nullable|string|max:1000',
+                'description.*' => 'nullable|string|max:1000',
                 'is_active' => 'boolean',
                 'configuration' => 'required|array',
                 'configuration.locales' => 'required|array|min:1',
                 'configuration.locales.*' => 'string|in:en,de,it,fr',
             ]);
+
+            // Validate that all required locales have values
+            foreach ($validated['configuration']['locales'] as $locale) {
+                if (!isset($validated['name'][$locale]) || empty($validated['name'][$locale])) {
+                    throw ValidationException::withMessages([
+                        "name.{$locale}" => ["Name for locale '{$locale}' is required"],
+                    ]);
+                }
+                if (isset($validated['description']) && (!isset($validated['description'][$locale]) || empty($validated['description'][$locale]))) {
+                    throw ValidationException::withMessages([
+                        "description.{$locale}" => ["Description for locale '{$locale}' is required"],
+                    ]);
+                }
+            }
+
+            // Validate that all name keys are within allowed locales
+            $allowedLocales = $validated['configuration']['locales'];
+            foreach (array_keys($validated['name']) as $locale) {
+                if (!in_array($locale, $allowedLocales)) {
+                    throw ValidationException::withMessages([
+                        "name.{$locale}" => ["Locale '{$locale}' is not in allowed locales: " . implode(', ', $allowedLocales)],
+                    ]);
+                }
+            }
+
+            // Validate that all description keys are within allowed locales (if description exists)
+            if (isset($validated['description'])) {
+                foreach (array_keys($validated['description']) as $locale) {
+                    if (!in_array($locale, $allowedLocales)) {
+                        throw ValidationException::withMessages([
+                            "description.{$locale}" => ["Locale '{$locale}' is not in allowed locales: " . implode(', ', $allowedLocales)],
+                        ]);
+                    }
+                }
+            }
 
             $form = Auth::user()->forms()->create($validated);
 
@@ -520,28 +553,35 @@ class FormController extends Controller
 
             $validated = $request->validate([
                 'name' => 'sometimes|array',
-                'name.en' => 'sometimes|string|max:255',
-                'name.de' => 'sometimes|string|max:255',
+                'name.*' => 'sometimes|string|max:255',
                 'description' => 'sometimes|nullable|array',
-                'description.en' => 'sometimes|nullable|string|max:1000',
-                'description.de' => 'sometimes|nullable|string|max:1000',
+                'description.*' => 'sometimes|nullable|string|max:1000',
                 'is_active' => 'sometimes|boolean',
                 'configuration' => 'sometimes|array',
                 'configuration.locales' => 'sometimes|array|min:1',
                 'configuration.locales.*' => 'string|in:en,de,it,fr',
             ]);
 
-            // Additional validation: if name is provided, both en and de must be present
+            // Additional validation: if name is provided, ensure all locales have values
             if (isset($validated['name']) && is_array($validated['name'])) {
-                if (isset($validated['name']['en']) && !isset($validated['name']['de'])) {
-                    throw ValidationException::withMessages([
-                        'name.de' => ['The name.de field is required when name.en is present.'],
-                    ]);
+                $nameLocales = array_keys($validated['name']);
+                foreach ($nameLocales as $locale) {
+                    if (empty($validated['name'][$locale])) {
+                        throw ValidationException::withMessages([
+                            "name.{$locale}" => ["The name.{$locale} field cannot be empty."],
+                        ]);
+                    }
                 }
-                if (isset($validated['name']['de']) && !isset($validated['name']['en'])) {
-                    throw ValidationException::withMessages([
-                        'name.en' => ['The name.en field is required when name.de is present.'],
-                    ]);
+            }
+
+            // Additional validation: if configuration.locales is provided, ensure all locales have name values
+            if (isset($validated['configuration']['locales']) && isset($validated['name'])) {
+                foreach ($validated['configuration']['locales'] as $locale) {
+                    if (!isset($validated['name'][$locale]) || empty($validated['name'][$locale])) {
+                        throw ValidationException::withMessages([
+                            "name.{$locale}" => ["Name for locale '{$locale}' is required when updating configuration.locales"],
+                        ]);
+                    }
                 }
             }
 

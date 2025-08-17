@@ -16,28 +16,39 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create test users with known credentials
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'email_verified_at' => now(),
-            'password' => bcrypt('password'),
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+            ],
+        );
 
-        User::create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'email_verified_at' => now(),
-            'password' => bcrypt('password'),
-        ]);
+        $testUser = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+            ],
+        );
 
-        User::create([
-            'name' => 'Demo User',
-            'email' => 'demo@example.com',
-            'email_verified_at' => now(),
-            'password' => bcrypt('password'),
-        ]);
+        $demo = User::firstOrCreate(
+            ['email' => 'demo@example.com'],
+            [
+                'name' => 'Demo User',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+            ],
+        );
 
         // Create additional random users if needed
         // User::factory(5)->create();
+
+        // Seed forms for all users
+        $this->call([
+            FormSeeder::class,
+        ]);
     }
 }
