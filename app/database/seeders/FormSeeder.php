@@ -58,10 +58,14 @@ class FormSeeder extends Seeder
                 }, $fieldData['options']);
             }
 
+            // Create validation rules based on field type
+            $validationRules = $this->createValidationRules($fieldData);
+
             $field = $form->fields()->create([
                 'type' => $fieldData['type'],
                 'order' => $fieldData['order'],
                 'configuration' => $configuration,
+                'validation_rules' => $validationRules,
             ]);
         }
     }
@@ -82,6 +86,106 @@ class FormSeeder extends Seeder
             // Create fields for this form
             $this->createFieldsForForm($form, $formData['fields']);
         }
+    }
+
+    private function createValidationRules(array $fieldData): array
+    {
+        $rules = [];
+        $type = $fieldData['type'];
+        $required = $fieldData['required'] ?? false;
+
+        // Base validation rules
+        if ($required) {
+            $rules['required'] = [
+                'rule' => 'required',
+                'error_messages' => [
+                    'en' => 'This field is required',
+                    'de' => 'Dieses Feld ist erforderlich',
+                ],
+            ];
+        }
+
+        // Type-specific validation rules
+        switch ($type) {
+            case 'email':
+                $rules['email'] = [
+                    'rule' => 'email',
+                    'error_messages' => [
+                        'en' => 'Please enter a valid email address',
+                        'de' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+                    ],
+                ];
+
+                break;
+
+            case 'number':
+                $rules['numeric'] = [
+                    'rule' => 'numeric',
+                    'error_messages' => [
+                        'en' => 'Please enter a valid number',
+                        'de' => 'Bitte geben Sie eine gültige Zahl ein',
+                    ],
+                ];
+
+                break;
+
+            case 'tel':
+                $rules['phone'] = [
+                    'rule' => 'regex:/^[\+]?[1-9][\d]{0,15}$/',
+                    'error_messages' => [
+                        'en' => 'Please enter a valid phone number',
+                        'de' => 'Bitte geben Sie eine gültige Telefonnummer ein',
+                    ],
+                ];
+
+                break;
+
+            case 'url':
+                $rules['url'] = [
+                    'rule' => 'url',
+                    'error_messages' => [
+                        'en' => 'Please enter a valid URL',
+                        'de' => 'Bitte geben Sie eine gültige URL ein',
+                    ],
+                ];
+
+                break;
+
+            case 'file':
+                $rules['file'] = [
+                    'rule' => 'file|max:10240', // 10MB max
+                    'error_messages' => [
+                        'en' => 'Please upload a valid file (max 10MB)',
+                        'de' => 'Bitte laden Sie eine gültige Datei hoch (max 10MB)',
+                    ],
+                ];
+
+                break;
+
+            case 'date':
+                $rules['date'] = [
+                    'rule' => 'date',
+                    'error_messages' => [
+                        'en' => 'Please enter a valid date',
+                        'de' => 'Bitte geben Sie ein gültiges Datum ein',
+                    ],
+                ];
+
+                break;
+        }
+
+        // Text length validation for text fields
+        if (in_array($type, ['text', 'textarea'])) {
+            $rules['max_length'] = [
+                'rule' => 'max:1000',
+                'error_messages' => [
+                    'en' => 'Text cannot exceed 1000 characters',
+                    'de' => 'Text darf 1000 Zeichen nicht überschreiten',
+                ],
+            ];
+        }
+
+        return $rules;
     }
 
     private function getFormData(int $index, string $type): array

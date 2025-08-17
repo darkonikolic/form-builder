@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import UserForms from '@/Components/UserForms';
+import FormEditor from '@/Components/FormEditor';
 import { LogOut, X, Home, FileText } from 'lucide-react';
 
 export default function Dashboard() {
@@ -138,9 +139,35 @@ export default function Dashboard() {
                                 <button
                                     onClick={e => {
                                         e.stopPropagation();
+                                        // Open demo dialog here
+                                        alert(
+                                            "This is a demo project. In the full version, you would be able to see the generated form layout and test data entry here. However, since you haven't paid for the premium version yet, this feature is not available."
+                                        );
+                                    }}
+                                    className="w-5 h-5 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors mr-1"
+                                    title="Open Form (Demo)"
+                                >
+                                    <svg
+                                        className="h-3 w-3 text-slate-500 hover:text-slate-700"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={e => {
+                                        e.stopPropagation();
                                         closeTab(tab.id);
                                     }}
                                     className="w-5 h-5 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
+                                    title="Close Tab"
                                 >
                                     <X className="h-4 w-4 text-slate-500 hover:text-slate-700" />
                                 </button>
@@ -153,17 +180,10 @@ export default function Dashboard() {
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {activeTab ? (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                            <h2 className="text-xl font-semibold text-slate-900 mb-4">
-                                Edit Form {activeTab.id}
-                            </h2>
-                            <p className="text-slate-600">
-                                Form editor will be implemented here. This is a
-                                placeholder for the form editing interface.
-                            </p>
-                        </div>
-                    </div>
+                    <FormEditor
+                        formId={activeTab.id}
+                        onClose={() => closeTab(activeTab.id)}
+                    />
                 ) : (
                     <UserForms onOpenForm={openFormTab} />
                 )}
