@@ -47,6 +47,12 @@ setup:
 	@make up
 	@echo "Waiting for services to be ready..."
 	@sleep 10
+	@echo "Installing Composer dependencies..."
+	@make composer-install
+	@echo "Preparing Laravel app environment..."
+	@make app-env
+	@echo "Setting up storage directories..."
+	@make storage-setup
 	@echo "Setting up database..."
 	@make db-recreate
 	@echo "Setup complete! Services are running."
@@ -112,6 +118,27 @@ shell-composer:
 
 composer-install:
 	docker compose -f docker/docker-compose.yml exec composer composer install
+
+app-env:
+	@echo "\ud83d\udd27 Copying app/.env.example to app/.env and generating APP_KEY..."
+	docker compose -f docker/docker-compose.yml exec --user root php sh -lc 'cp -n .env.example .env || true'
+	docker compose -f docker/docker-compose.yml exec --user root php sh -lc 'chown www-data:www-data .env || true'
+	docker compose -f docker/docker-compose.yml exec php php artisan key:generate --force
+	@echo "\u2705 app/.env ready"
+
+sessions-table:
+	@echo "📋 Creating sessions table..."
+	docker compose -f docker/docker-compose.yml exec --user root php php artisan session:table
+	docker compose -f docker/docker-compose.yml exec --user root php sh -lc 'chown www-data:www-data database/migrations/*.php || true'
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate --force
+	@echo "✅ Sessions table created"
+
+storage-setup:
+	@echo "📁 Creating storage directories with proper permissions..."
+	docker compose -f docker/docker-compose.yml exec --user root php mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views storage/app/public
+	docker compose -f docker/docker-compose.yml exec --user root php chmod -R 775 storage
+	docker compose -f docker/docker-compose.yml exec --user root php chown -R www-data:www-data storage
+	@echo "✅ Storage directories created and permissions set"
 
 check-all:
 	@echo "🔧 Running comprehensive code quality check..."
@@ -185,7 +212,7 @@ db-recreate:
 	docker compose -f docker/docker-compose.yml exec postgres dropdb -U postgres form_builder --if-exists
 	docker compose -f docker/docker-compose.yml exec postgres createdb -U postgres form_builder
 	@echo "🔄 Running migrations..."
-	docker compose -f docker/docker-compose.yml exec php php artisan migrate
+	docker compose -f docker/docker-compose.yml exec php php artisan migrate --force
 	@echo "🌱 Running seeders..."
 	docker compose -f docker/docker-compose.yml exec php php artisan db:seed
 	@echo "✅ Database recreated and seeded successfully!"
