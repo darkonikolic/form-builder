@@ -1,88 +1,53 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import UserForms from '@/Components/UserForms';
 import FormEditor from '@/Components/FormEditor';
 import { LogOut, X, Home, FileText } from 'lucide-react';
 import DemoDialog from '@/components/ui/DemoDialog';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { useTabManagement } from '@/hooks/useTabManagement';
+import { BUTTON_SIZES, ICON_SIZES } from '@/constants/designTokens';
+
+// Memoize components to prevent unnecessary re-renders
+const MemoizedUserForms = memo(UserForms);
+const MemoizedFormEditor = memo(FormEditor);
 
 export default function Dashboard() {
     const { logout } = useAuth();
-    const [activeTab, setActiveTab] = useState(null);
-    const [openTabs, setOpenTabs] = useState([]);
-    const [demoDialog, setDemoDialog] = useState(false);
+    const [isDemoDialogOpen, setIsDemoDialogOpen] = useState(false);
 
-    // Load open tabs from localStorage on component mount
-    useEffect(() => {
-        const savedTabs = localStorage.getItem('openTabs');
-        const savedActiveTab = localStorage.getItem('activeTab');
+    const {
+        activeTab,
+        openTabs,
+        openFormTab,
+        closeTab,
+        switchToTab,
+        resetToDashboard,
+    } = useTabManagement();
 
-        if (savedTabs) {
-            try {
-                const parsedTabs = JSON.parse(savedTabs);
-                setOpenTabs(parsedTabs);
+    const handleLogout = useCallback(() => {
+        logout();
+    }, [logout]);
 
-                // Restore active tab if it exists in open tabs
-                if (savedActiveTab) {
-                    const parsedActiveTab = JSON.parse(savedActiveTab);
-                    if (parsedTabs.find(tab => tab.id === parsedActiveTab.id)) {
-                        setActiveTab(parsedActiveTab);
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading tabs from localStorage:', error);
-            }
-        }
+    const handleOpenDemoDialog = useCallback(e => {
+        e.stopPropagation();
+        setIsDemoDialogOpen(true);
     }, []);
 
-    const handleLogout = () => {
-        logout();
-    };
-
-    const openFormTab = formId => {
-        // Check if form is already open
-        const existingTab = openTabs.find(tab => tab.id === formId);
-
-        if (existingTab) {
-            // If form is already open, just switch to it
-            setActiveTab(existingTab);
-            localStorage.setItem('activeTab', JSON.stringify(existingTab));
-            return;
-        }
-
-        // Add form to open tabs if not already open
-        const newTabs = [...openTabs, { id: formId, type: 'form' }];
-        setOpenTabs(newTabs);
-        localStorage.setItem('openTabs', JSON.stringify(newTabs));
-
-        const newActiveTab = { id: formId, type: 'form' };
-        setActiveTab(newActiveTab);
-        localStorage.setItem('activeTab', JSON.stringify(newActiveTab));
-    };
-
-    const closeTab = formId => {
-        // Remove specific form tab
-        const newTabs = openTabs.filter(tab => tab.id !== formId);
-        setOpenTabs(newTabs);
-        localStorage.setItem('openTabs', JSON.stringify(newTabs));
-
-        // If closing active tab, switch to dashboard
-        if (activeTab && activeTab.id === formId) {
-            setActiveTab(null);
-            localStorage.removeItem('activeTab');
-        }
-    };
-
-    const switchToTab = tab => {
-        setActiveTab(tab);
-        localStorage.setItem('activeTab', JSON.stringify(tab));
-    };
+    const handleCloseTab = useCallback(
+        (e, formId) => {
+            e.stopPropagation();
+            closeTab(formId);
+        },
+        [closeTab]
+    );
 
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header with Logout button */}
             <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
                             <h1 className="text-xl font-semibold text-slate-900">
@@ -103,14 +68,11 @@ export default function Dashboard() {
 
             {/* Navigation Tabs */}
             <div className="bg-white/60 backdrop-blur-sm border-b border-slate-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="flex items-start min-h-12 py-2 gap-2 flex-wrap">
                         {/* Dashboard Tab - Always visible */}
                         <button
-                            onClick={() => {
-                                setActiveTab(null);
-                                localStorage.removeItem('activeTab');
-                            }}
+                            onClick={resetToDashboard}
                             className={`flex items-center rounded-t-lg px-4 py-2 border border-slate-200 border-b-0 transition-colors cursor-pointer mb-2 ${
                                 !activeTab
                                     ? 'bg-blue-50 border-blue-300 text-blue-900 border-b-2 border-b-blue-600 shadow-sm'
@@ -139,18 +101,19 @@ export default function Dashboard() {
                                     Form {tab.id}
                                 </span>
                                 <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        setDemoDialog(true);
-                                    }}
-                                    className="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors mr-1"
+                                    onClick={handleOpenDemoDialog}
+                                    className={`${BUTTON_SIZES.icon.md} rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors mr-1`}
                                     title="Open Form (Demo)"
+                                    aria-label="Open form in demo mode"
+                                    role="button"
+                                    tabIndex={0}
                                 >
                                     <svg
-                                        className="h-3 w-3 text-slate-600 hover:text-slate-800"
+                                        className={`${ICON_SIZES.sm} text-slate-600 hover:text-slate-800`}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
+                                        aria-hidden="true"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -161,14 +124,13 @@ export default function Dashboard() {
                                     </svg>
                                 </button>
                                 <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        closeTab(tab.id);
-                                    }}
-                                    className="w-5 h-5 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
+                                    onClick={e => handleCloseTab(e, tab.id)}
+                                    className={`${BUTTON_SIZES.icon.md} rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors`}
                                     title="Close Tab"
                                 >
-                                    <X className="h-4 w-4 text-slate-500 hover:text-slate-700" />
+                                    <X
+                                        className={`${ICON_SIZES.sm} text-slate-500 hover:text-slate-700`}
+                                    />
                                 </button>
                             </div>
                         ))}
@@ -177,19 +139,33 @@ export default function Dashboard() {
             </div>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 {activeTab ? (
-                    <FormEditor
-                        formId={activeTab.id}
-                        onClose={() => closeTab(activeTab.id)}
-                    />
+                    <ErrorBoundary
+                        fallback={
+                            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                                <p className="text-red-600">
+                                    Error loading form editor. Please try again.
+                                </p>
+                            </div>
+                        }
+                        onRetry={() => window.location.reload()}
+                    >
+                        <MemoizedFormEditor
+                            formId={activeTab.id}
+                            onClose={() => closeTab(activeTab.id)}
+                        />
+                    </ErrorBoundary>
                 ) : (
-                    <UserForms onOpenForm={openFormTab} />
+                    <MemoizedUserForms onOpenForm={openFormTab} />
                 )}
             </main>
 
             {/* Demo Dialog */}
-            <DemoDialog isOpen={demoDialog} onOpenChange={setDemoDialog} />
+            <DemoDialog
+                isOpen={isDemoDialogOpen}
+                onOpenChange={setIsDemoDialogOpen}
+            />
         </div>
     );
 }
