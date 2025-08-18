@@ -62,16 +62,7 @@ describe('API Authentication', function (): void {
 
             $response = $this->postJson('/api/register', $userData);
 
-            $response->assertStatus(422)
-                ->assertJsonStructure([
-                    'success',
-                    'message',
-                    'errors' => ['name', 'email', 'password'],
-                ])
-                ->assertJson([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                ]);
+            $this->assertValidationError($response, ['name', 'email', 'password']);
         });
 
         it('fails when email already exists', function (): void {
@@ -160,16 +151,7 @@ describe('API Authentication', function (): void {
 
             $response = $this->postJson('/api/login', $loginData);
 
-            $response->assertStatus(422)
-                ->assertJsonStructure([
-                    'success',
-                    'message',
-                    'errors' => ['email', 'password'],
-                ])
-                ->assertJson([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                ]);
+            $this->assertValidationError($response, ['email', 'password']);
         });
     });
 
@@ -180,11 +162,7 @@ describe('API Authentication', function (): void {
 
             $response = $this->postJson('/api/logout');
 
-            $response->assertStatus(200)
-                ->assertJson([
-                    'success' => true,
-                    'message' => 'Logged out successfully',
-                ]);
+            $this->assertSuccessfulApiResponse($response, 'Logged out successfully', false);
 
             $this->assertDatabaseMissing('personal_access_tokens', [
                 'tokenable_id' => $user->id,
@@ -194,7 +172,7 @@ describe('API Authentication', function (): void {
         it('fails when user is not authenticated', function (): void {
             $response = $this->postJson('/api/logout');
 
-            $response->assertStatus(401);
+            $this->assertUnauthorizedError($response);
         });
     });
 });

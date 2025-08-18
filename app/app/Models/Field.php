@@ -97,18 +97,16 @@ class Field extends Model
 
     /**
      * Automatically sync type column with configuration.type.
-     */
-    /**
+     *
      * @throws ValidationException
      */
     private function syncTypeFields(): void
     {
         $config = $this->configuration ?? [];
+        $validTypes = config('form-builder.valid_field_types', ['text', 'email', 'password', 'number', 'textarea', 'select', 'checkbox', 'radio']);
 
         // Validate field type if it's set
         if (isset($this->type)) {
-            $validTypes = ['text', 'email', 'password', 'number', 'textarea', 'select', 'checkbox', 'radio', 'file', 'date', 'time', 'datetime-local', 'url', 'tel', 'search', 'color', 'range', 'hidden'];
-
             if (!in_array($this->type, $validTypes)) {
                 throw ValidationException::withMessages([
                     'type' => ['Invalid field type: ' . $this->type . '. Valid types are: ' . implode(', ', $validTypes)],

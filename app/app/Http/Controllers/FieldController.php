@@ -107,7 +107,7 @@ class FieldController extends Controller
      */
     public function destroy(string $form_id, string $field_id): JsonResponse
     {
-        $this->fieldService->deleteFormField(Auth::user(), $form_id, $field_id);
+        $this->fieldService->deleteField(Auth::user()->id, $form_id, $field_id);
 
         return $this->responseService->successResponse(null, 'Field deleted successfully');
     }
@@ -183,7 +183,7 @@ class FieldController extends Controller
      */
     public function index(string $form_id): JsonResponse
     {
-        $fields = $this->fieldService->getFormFields(Auth::user(), $form_id);
+        $fields = $this->fieldService->getFormFields(Auth::user()->id, $form_id);
 
         return $this->responseService->successResponse($fields, 'Fields retrieved successfully');
     }
@@ -256,7 +256,7 @@ class FieldController extends Controller
      */
     public function show(string $form_id, string $field_id): JsonResponse
     {
-        $field = $this->fieldService->getFormField(Auth::user(), $form_id, $field_id);
+        $field = $this->fieldService->getFormField(Auth::user()->id, $form_id, $field_id);
 
         return $this->responseService->successResponse($field, 'Field retrieved successfully');
     }
@@ -376,7 +376,7 @@ class FieldController extends Controller
     public function store(StoreFieldRequest $request, string $form_id): JsonResponse
     {
         $validated = $request->validated();
-        $field = $this->fieldService->createFormField(Auth::user(), $form_id, $validated);
+        $field = $this->fieldService->createField(Auth::user()->id, $form_id, $validated);
 
         return $this->responseService->successResponse($field, 'Field created successfully', 201);
     }
@@ -501,7 +501,7 @@ class FieldController extends Controller
     public function update(UpdateFieldRequest $request, string $form_id, string $field_id): JsonResponse
     {
         $validated = $request->validated();
-        $field = $this->fieldService->updateFormField(Auth::user(), $form_id, $field_id, $validated);
+        $field = $this->fieldService->updateField(Auth::user()->id, $form_id, $field_id, $validated);
 
         return $this->responseService->successResponse($field, 'Field updated successfully');
     }

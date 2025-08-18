@@ -5,129 +5,129 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\ServerException;
 use App\Models\Field;
 use App\Models\Form;
 use App\Models\User;
+use App\Repositories\FieldRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
-use Illuminate\Validation\ValidationException;
 
-class FieldService
+class FieldService implements FieldServiceInterface
 {
+    public function __construct(
+        private FieldRepositoryInterface $fieldRepository,
+        private FormService $formService,
+    ) {
+    }
+
     /**
      * Create a new field for a form.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function createFormField(User $user, string $formId, array $fieldData): Field
+    public function createField(string $userId, string $formId, array $fieldData): Field
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
+        // First check if user owns the form
+        $this->formService->getUserForm($userId, $formId);
 
-            if (!isset($fieldData['order'])) {
-                $fieldData['order'] = $form->fields()->max('order') + 1;
-            }
+        $fieldData['form_id'] = $formId;
 
-            return $form->fields()->create($fieldData);
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form not found');
-        } catch (QueryException|ValidationException $e) {
-            throw new ServerException('Failed to create field: ' . $e->getMessage());
+        if (!isset($fieldData['order'])) {
+            $fieldData['order'] = $this->fieldRepository->getNextOrder($formId);
         }
+
+        return $this->fieldRepository->create($fieldData);
     }
 
     /**
      * Delete a field from a form.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function deleteFormField(User $user, string $formId, string $fieldId): bool
+    public function deleteField(string $userId, string $formId, string $fieldId): bool
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
-            $field = $form->fields()->findOrFail($fieldId);
-
-            return $field->delete();
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form or field not found');
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to delete field: ' . $e->getMessage());
+        // First check if field exists
+        $field = $this->fieldRepository->findById($fieldId);
+        if (!$field) {
+            throw new ResourceNotFoundException('Field not found');
         }
+
+        // Then check if user owns the form
+        $this->formService->getUserForm($userId, $formId);
+
+        // Finally check if field belongs to the form
+        if ($field->form_id !== $formId) {
+            throw new ResourceNotFoundException('Field not found');
+        }
+
+        return $this->fieldRepository->delete($field);
     }
 
     /**
-     * Check if field belongs to user's form.
+     * Check if a field belongs to a user's form.
      */
     public function fieldBelongsToUserForm(User $user, string $formId, string $fieldId): bool
     {
-        return $user->forms()
-            ->where('id', $formId)
-            ->whereHas('fields', function ($query) use ($fieldId): void {
-                $query->where('id', $fieldId);
-            })
-            ->exists();
+        // First check if user owns the form
+        try {
+            $this->formService->getUserForm($user->id, $formId);
+        } catch (\App\Exceptions\ResourceNotFoundException $e) {
+            return false;
+        }
+
+        // Then check if field exists and belongs to the form
+        $field = $this->fieldRepository->findById($fieldId);
+
+        return $field && $field->form_id === $formId;
     }
 
     /**
      * Get a specific field from a form.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function getFormField(User $user, string $formId, string $fieldId): Field
+    public function getFormField(string $userId, string $formId, string $fieldId): Field
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
-
-            return $form->fields()->findOrFail($fieldId);
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form or field not found');
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to retrieve field: ' . $e->getMessage());
+        // First check if field exists
+        $field = $this->fieldRepository->findById($fieldId);
+        if (!$field) {
+            throw new ResourceNotFoundException('Field not found');
         }
+
+        // Then check if user owns the form
+        $this->formService->getUserForm($userId, $formId);
+
+        // Finally check if field belongs to the form
+        if ($field->form_id !== $formId) {
+            throw new ResourceNotFoundException('Field not found');
+        }
+
+        return $field;
     }
 
     /**
      * Get all fields for a form.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function getFormFields(User $user, string $formId): Collection
+    public function getFormFields(string $userId, string $formId): Collection
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
+        // First check if user owns the form
+        $this->formService->getUserForm($userId, $formId);
 
-            return $form->fields()->orderBy('order')->get();
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form not found');
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to retrieve fields: ' . $e->getMessage());
-        }
+        return $this->fieldRepository->findByFormId($formId);
     }
 
     /**
      * Update a field in a form.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function updateFormField(User $user, string $formId, string $fieldId, array $fieldData): Field
+    public function updateField(string $userId, string $formId, string $fieldId, array $fieldData): Field
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
-            $field = $form->fields()->findOrFail($fieldId);
-            $field->update($fieldData);
-
-            return $field->fresh();
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form or field not found');
-        } catch (QueryException|ValidationException $e) {
-            throw new ServerException('Failed to update field: ' . $e->getMessage());
+        // First check if field exists
+        $field = $this->fieldRepository->findById($fieldId);
+        if (!$field) {
+            throw new ResourceNotFoundException('Field not found');
         }
+
+        // Then check if user owns the form
+        $this->formService->getUserForm($userId, $formId);
+
+        // Finally check if field belongs to the form
+        if ($field->form_id !== $formId) {
+            throw new ResourceNotFoundException('Field not found');
+        }
+
+        return $this->fieldRepository->update($field, $fieldData);
     }
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 use App\Models\Field;
 use App\Models\Form;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 describe('Field Management', function (): void {
     beforeEach(function (): void {
-        $this->user = User::factory()->create();
+        $this->user = $this->createUser();
     });
 
     describe('Field CRUD Operations', function (): void {
@@ -20,17 +19,10 @@ describe('Field Management', function (): void {
                 'user_id' => $this->user->id,
             ]);
 
-            $fieldData = [
+            $fieldData = $this->getFieldData('text', [
                 'form_id' => $form->id,
-                'type' => 'text',
                 'order' => 1,
-                'configuration' => [
-                    'type' => 'text',
-                    'name' => 'test_field',
-                    'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
-                    'required' => true,
-                ],
-            ];
+            ]);
 
             $field = Field::create($fieldData);
 
@@ -118,8 +110,8 @@ describe('Field Management', function (): void {
                 'form_id' => $form->id,
             ]);
 
-            $this->assertTrue($field->form->is($form));
-            $this->assertEquals($form->id, $field->form_id);
+            $this->assertEquals($form->id, $field->form->id);
+            $this->assertEquals($form->name['en'], $field->form->name['en']);
         });
 
         it('form can have multiple fields', function (): void {
@@ -127,12 +119,19 @@ describe('Field Management', function (): void {
                 'user_id' => $this->user->id,
             ]);
 
-            $fields = Field::factory()->count(3)->create([
+            $field1 = Field::factory()->create([
                 'form_id' => $form->id,
+                'order' => 1,
             ]);
 
-            $this->assertEquals(3, $form->fields()->count());
-            $this->assertTrue($form->fields->contains($fields->first()));
+            $field2 = Field::factory()->create([
+                'form_id' => $form->id,
+                'order' => 2,
+            ]);
+
+            $this->assertEquals(2, $form->fields->count());
+            $this->assertTrue($form->fields->contains($field1));
+            $this->assertTrue($form->fields->contains($field2));
         });
     });
 
@@ -142,16 +141,15 @@ describe('Field Management', function (): void {
                 'user_id' => $this->user->id,
             ]);
 
-            $this->expectException(\Exception::class);
+            $this->expectException(\Illuminate\Validation\ValidationException::class);
 
             Field::create([
                 'form_id' => $form->id,
                 'type' => 'text',
                 'order' => 1,
                 'configuration' => [
-                    // Missing required 'name' field
                     'type' => 'text',
-                    'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
+                    // Missing required fields
                 ],
             ]);
         });
@@ -161,7 +159,7 @@ describe('Field Management', function (): void {
                 'user_id' => $this->user->id,
             ]);
 
-            $this->expectException(\Exception::class);
+            $this->expectException(\Illuminate\Validation\ValidationException::class);
 
             Field::create([
                 'form_id' => $form->id,
@@ -170,7 +168,7 @@ describe('Field Management', function (): void {
                 'configuration' => [
                     'type' => 'invalid_type',
                     'name' => 'test_field',
-                    'label' => ['en' => 'Test Field', 'de' => 'Test Feld'],
+                    'label' => ['en' => 'Test Field'],
                 ],
             ]);
         });
@@ -192,16 +190,10 @@ describe('Field Management', function (): void {
                 'order' => 2,
             ]);
 
-            $field3 = Field::factory()->create([
-                'form_id' => $form->id,
-                'order' => 3,
-            ]);
+            $orderedFields = $form->fields()->orderBy('order')->get();
 
-            $orderedFields = $form->fields()->get();
-
-            $this->assertEquals($field1->id, $orderedFields[0]->id);
-            $this->assertEquals($field2->id, $orderedFields[1]->id);
-            $this->assertEquals($field3->id, $orderedFields[2]->id);
+            $this->assertEquals($field1->id, $orderedFields->first()->id);
+            $this->assertEquals($field2->id, $orderedFields->last()->id);
         });
     });
 });

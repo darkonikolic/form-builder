@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Field;
 
+use App\Http\Requests\Traits\ValidatesFieldCreation;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreFieldRequest extends FormRequest
 {
+    use ValidatesFieldCreation;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -20,45 +23,28 @@ class StoreFieldRequest extends FormRequest
 
     /**
      * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'configuration.label.en.required' => 'The English label is required.',
-            'configuration.label.de.required' => 'The German label is required.',
-            'configuration.options.*.label.en.required' => 'The English label is required for all options.',
-            'configuration.options.*.label.de.required' => 'The German label is required for all options.',
+            'type.in' => 'The selected field type is invalid.',
+            'configuration.label.required' => 'Field labels are required for all form locales.',
+            'configuration.label.*.required' => 'Field label is required for this locale.',
         ];
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return [
-            'type' => 'required|string|in:text,email,password,number,textarea,select,checkbox,radio,file,date,time,datetime-local,url,tel,search,color,range,hidden',
-            'order' => 'sometimes|integer|min:0',
-            'configuration' => 'required|array',
-            'configuration.name' => 'required|string|max:255',
-            'configuration.label' => 'required|array',
-            'configuration.label.en' => 'required|string|max:255',
-            'configuration.label.de' => 'required|string|max:255',
-            'configuration.required' => 'sometimes|boolean',
-            'configuration.placeholder' => 'sometimes|array',
-            'configuration.placeholder.en' => 'sometimes|string|max:255',
-            'configuration.placeholder.de' => 'sometimes|string|max:255',
-            'configuration.options' => 'sometimes|array',
-            'configuration.options.*.value' => 'required_with:configuration.options|string',
-            'configuration.options.*.label' => 'required_with:configuration.options|array',
-            'configuration.options.*.label.en' => 'required_with:configuration.options.*.label|string',
-            'configuration.options.*.label.de' => 'required_with:configuration.options.*.label|string',
-            'validation_rules' => 'sometimes|nullable|array',
-        ];
+        $form = $this->route('form');
+        $formLocales = $form->configuration['locales'] ?? ['en', 'de'];
+
+        return array_merge(
+            $this->getStoreFieldRules(),
+            $this->getStoreLabelValidationRules($formLocales),
+        );
     }
 
     /**
@@ -71,20 +57,5 @@ class StoreFieldRequest extends FormRequest
             'message' => 'Validation failed',
             'errors' => $validator->errors(),
         ], 422));
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        // Automatically populate configuration.type from the base type field
-        if ($this->has('type')) {
-            $this->merge([
-                'configuration' => array_merge($this->input('configuration', []), [
-                    'type' => $this->input('type'),
-                ]),
-            ]);
-        }
     }
 }

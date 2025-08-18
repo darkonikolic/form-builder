@@ -98,7 +98,7 @@ class FormController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        $this->formService->deleteUserForm(Auth::user(), $id);
+        $this->formService->deleteForm(Auth::user()->id, $id);
 
         return $this->responseService->successResponse(null, 'Form deleted successfully');
     }
@@ -153,7 +153,7 @@ class FormController extends Controller
      */
     public function index(): JsonResponse
     {
-        $forms = $this->formService->getUserForms(Auth::user());
+        $forms = $this->formService->getUserForms(Auth::user()->id);
 
         return $this->responseService->successResponse($forms, 'Forms retrieved successfully');
     }
@@ -320,7 +320,7 @@ class FormController extends Controller
     public function store(StoreFormRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $form = $this->formService->createUserForm(Auth::user(), $validated);
+        $form = $this->formService->createForm(Auth::user()->id, $validated);
 
         return $this->responseService->successResponse($form, 'Form created successfully', 201);
     }
@@ -441,7 +441,7 @@ class FormController extends Controller
     public function update(UpdateFormRequest $request, string $id): JsonResponse
     {
         $validated = $request->validated();
-        $form = $this->formService->updateUserForm(Auth::user(), $id, $validated);
+        $form = $this->formService->updateForm(Auth::user()->id, $id, $validated);
 
         return $this->responseService->successResponse($form, 'Form updated successfully');
     }

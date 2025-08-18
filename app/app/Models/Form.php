@@ -63,8 +63,6 @@ class Form extends Model
     use HasFactory;
     use HasUuids;
 
-    private const VALID_LOCALES = ['en', 'de', 'it', 'fr'];
-
     protected $casts = [
         'is_active' => 'boolean',
         'name' => 'array',
@@ -109,12 +107,13 @@ class Form extends Model
     {
         $config = $this->configuration ?? [];
         $locales = $config['locales'] ?? [];
+        $validLocales = config('form-builder.valid_locales', ['en', 'de']);
 
         // Validate if locales are valid
         foreach ($locales as $locale) {
-            if (!in_array($locale, self::VALID_LOCALES, true)) {
+            if (!in_array($locale, $validLocales, true)) {
                 throw ValidationException::withMessages([
-                    "configuration.locales.{$locale}" => ["Invalid locale: {$locale}. Allowed: " . implode(', ', self::VALID_LOCALES)],
+                    "configuration.locales.{$locale}" => ["Invalid locale: {$locale}. Allowed: " . implode(', ', $validLocales)],
                 ]);
             }
         }

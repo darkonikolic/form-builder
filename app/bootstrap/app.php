@@ -6,6 +6,7 @@ use App\Exceptions\AuthenticationException as AppAuthenticationException;
 use App\Exceptions\ResourceNotFoundException as AppResourceNotFoundException;
 use App\Exceptions\ServerException as AppServerException;
 use App\Http\Middleware\ViteMiddleware;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -46,5 +47,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
+        });
+
+        $exceptions->renderable(function (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Field not found',
+            ], 404);
         });
     })->create();

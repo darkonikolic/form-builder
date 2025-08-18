@@ -4,106 +4,93 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\ServerException;
 use App\Models\Form;
 use App\Models\User;
+use App\Repositories\FormRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
-use Illuminate\Validation\ValidationException;
 
-class FormService
+class FormService implements FormServiceInterface
 {
+    public function __construct(
+        private FormRepositoryInterface $formRepository,
+    ) {
+    }
+
     /**
      * Create a new form for a user.
-     *
-     * @throws ServerException
      */
-    public function createUserForm(User $user, array $formData): Form
+    public function createForm(string $userId, array $formData): Form
     {
-        try {
-            return $user->forms()->create($formData);
-        } catch (QueryException|ValidationException $e) {
-            throw new ServerException('Failed to create form: ' . $e->getMessage());
-        }
+        $formData['user_id'] = $userId;
+
+        return $this->formRepository->create($formData);
     }
 
     /**
      * Delete a form for a user.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function deleteUserForm(User $user, string $formId): bool
+    public function deleteForm(string $userId, string $formId): bool
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
-
-            return $form->delete();
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form not found');
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to delete form: ' . $e->getMessage());
+        if (!$this->formRepository->userOwnsForm($userId, $formId)) {
+            throw new \App\Exceptions\ResourceNotFoundException('Form not found');
         }
+
+        $form = $this->formRepository->findByIdOrFail($formId);
+
+        return $this->formRepository->delete($form);
     }
 
     /**
-     * Check if form belongs to user.
+     * Check if a form belongs to a user.
      */
     public function formBelongsToUser(User $user, string $formId): bool
     {
-        return $user->forms()->where('id', $formId)->exists();
+        return $this->formRepository->userOwnsForm($user->id, $formId);
+    }
+
+    /**
+     * Get a specific form for a user.
+     */
+    public function getUserForm(string $userId, string $formId): Form
+    {
+        if (!$this->formRepository->userOwnsForm($userId, $formId)) {
+            throw new \App\Exceptions\ResourceNotFoundException('Form not found');
+        }
+
+        return $this->formRepository->findByIdOrFail($formId);
     }
 
     /**
      * Get all forms for a user.
-     *
-     * @throws ServerException
      */
-    public function getUserForms(User $user): Collection
+    public function getUserForms(string $userId): Collection
     {
-        try {
-            return $user->forms()->orderBy('created_at', 'desc')->get();
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to retrieve forms: ' . $e->getMessage());
-        }
+        return $this->formRepository->findByUserId($userId);
     }
 
     /**
-     * Get a specific form with fields for a user.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
+     * Get a form with its fields for a user.
      */
     public function getUserFormWithFields(User $user, string $formId): Form
     {
-        try {
-            return $user->forms()->with('fields')->findOrFail($formId);
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form not found');
-        } catch (QueryException $e) {
-            throw new ServerException('Failed to retrieve form: ' . $e->getMessage());
+        if (!$this->formRepository->userOwnsForm($user->id, $formId)) {
+            throw new \App\Exceptions\ResourceNotFoundException('Form not found');
         }
+
+        return $this->formRepository->findByIdOrFail($formId)->load('fields');
     }
 
     /**
      * Update a form for a user.
-     *
-     * @throws ResourceNotFoundException
-     * @throws ServerException
      */
-    public function updateUserForm(User $user, string $formId, array $formData): Form
+    public function updateForm(string $userId, string $formId, array $formData): Form
     {
-        try {
-            $form = $user->forms()->findOrFail($formId);
-            $form->update($formData);
-
-            return $form->fresh();
-        } catch (ModelNotFoundException $e) {
-            throw new ResourceNotFoundException('Form not found');
-        } catch (QueryException|ValidationException $e) {
-            throw new ServerException('Failed to update form: ' . $e->getMessage());
+        if (!$this->formRepository->userOwnsForm($userId, $formId)) {
+            throw new \App\Exceptions\ResourceNotFoundException('Form not found');
         }
+
+        $form = $this->formRepository->findByIdOrFail($formId);
+
+        return $this->formRepository->update($form, $formData);
     }
 }

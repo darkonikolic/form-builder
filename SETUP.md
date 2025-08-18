@@ -1,24 +1,96 @@
-# Form Builder Project - Setup Guide
+# Form Builder Setup Guide
 
-## Quick Start
+## Prerequisites
 
-### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+- PHP 8.2+ (for local development)
 
-- Docker
-- Docker Compose
-- Make (optional)
+## Quick Setup
 
-### Setup Commands
+### 1. Clone and setup
 
 ```bash
-# One command setup (recommended)
+git clone https://github.com/dnikolic/form-builder.git
+cd form-builder
 make setup
+```
 
-# Or step by step:
-cp docker/env.example docker/.env
-make build
+### 2. Start services
+
+```bash
 make up
 ```
+
+### 3. Run quality checks
+
+```bash
+make check-all
+```
+
+## Available Commands
+
+### Development Commands
+
+```bash
+make pint          # PHP code style
+make rector        # PHP improvements
+make lint          # JavaScript linting
+make format        # JavaScript formatting
+make test          # Run all tests
+```
+
+### Container Management
+
+```bash
+make up            # Start all services
+make down          # Stop all services
+make logs          # View logs
+make clean         # Clean up everything
+make ps            # Show running containers
+```
+
+### Shell Access
+
+```bash
+make shell-php      # PHP container shell
+make shell-node     # Node.js container shell
+make shell-postgres # Database shell
+```
+
+## Testing
+
+### Run all tests
+
+```bash
+make test
+```
+
+### Run specific test suite
+
+```bash
+docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="FormApiTest"
+docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="FieldApiTest"
+docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="ApiAuthTest"
+```
+
+### Run individual tests
+
+```bash
+docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="user can create form"
+```
+
+## Code Quality Checks
+
+The `make check-all` command runs the complete quality check pipeline:
+
+1. **Laravel Pint** - PHP code style fixing
+2. **Rector** - PHP code improvements
+3. **ESLint** - JavaScript linting and fixing
+4. **Prettier** - JavaScript code formatting
+5. **Swagger** - API documentation generation
+6. **Database** - Test database recreation
+7. **Tests** - Complete test suite execution
 
 ## Access Points
 
@@ -28,54 +100,9 @@ make up
   - Password: admin
 - **PostgreSQL**: localhost:5433
 
-## Project Structure
-
-```
-form-builder/
-├── app/                    # Application code
-├── docker/                 # Docker configuration
-│   ├── docker-compose.yml  # Services orchestration
-│   ├── php/               # PHP container
-│   ├── nginx/             # Web server
-│   ├── node/              # Frontend tools
-│   └── env.example        # Environment template
-├── task/                   # Project requirements
-└── Makefile               # Development commands
-```
-
-## Available Commands
-
-```bash
-make help           # Show all commands
-make setup          # Setup and start everything
-make build          # Build containers
-make up             # Start services
-make down           # Stop services
-make logs           # View logs
-make clean          # Clean up everything
-make ps             # Show running containers
-make shell-php      # PHP container shell
-make shell-node     # Node.js container shell
-make shell-postgres # Database shell
-```
-
-## Environment Variables
-
-All configuration is in `docker/.env`:
-
-- Ports (8085, 8081, 5433)
-- Database credentials
-- Service versions
-
-## Next Steps
-
-1. Access the web app at http://localhost:8085
-2. Create database migrations
-3. Build your form builder logic
-4. Add frontend components
-
 ## Troubleshooting
 
 - **Port conflicts**: Check if ports 8085, 8081, 5433 are free
 - **Build errors**: Run `make clean` then `make setup`
 - **Service issues**: Check logs with `make logs`
+- **Test failures**: Ensure database is running and migrations are fresh
