@@ -1,261 +1,182 @@
 # Form Builder
 
-A modern, multi-language form builder application built with Laravel, React, and Tailwind CSS. This project demonstrates building a full-stack application with proper architecture, testing, and code quality practices.
+A production-ready, multi-language form builder application built with modern web technologies. Features a robust Laravel backend with clean architecture and a responsive React frontend with Tailwind CSS.
 
-## What This Project Shows
+## Features
 
-### Backend Architecture
+- **User Management**: Secure authentication and authorization with Laravel Sanctum
+- **Form Builder**: Dynamic form creation with support for multiple languages
+- **Field System**: Comprehensive field types (text, email, select, checkbox, file, date, etc.)
+- **Validation**: Multi-level validation with custom rules and error handling
+- **API-First**: RESTful API with comprehensive Swagger documentation
+- **Responsive UI**: Modern React frontend with mobile-first design
+- **Multi-language**: Built-in internationalization support (English, German)
 
-- Laravel 11 with clean architecture principles
-- Repository pattern for data access
-- Service layer for business logic
-- Comprehensive API with Swagger documentation
-- User authentication using Laravel Sanctum
+## Architecture
 
-### Frontend Implementation
+### Backend
 
-- React 18 with modern hooks and patterns
-- Tailwind CSS for responsive design
-- Component-based architecture
-- State management with React Context
+- **Laravel 11** with clean architecture principles
+- **Repository pattern** for data access abstraction
+- **Service layer** for business logic separation
+- **Eloquent ORM** with PostgreSQL database
+- **API authentication** using Laravel Sanctum
+- **Comprehensive testing** with Pest PHP framework
 
-### Development Practices
+### Frontend
 
-- Full test coverage with Pest PHP framework
-- Code quality tools (Laravel Pint, Rector, ESLint, Prettier)
-- Docker-based development environment
-- Automated quality checks and testing
+- **React 18** with modern hooks and patterns
+- **Component-based architecture** with proper separation of concerns
+- **Tailwind CSS** for responsive design system
+- **Custom hooks** for state management
+- **Error boundaries** for graceful error handling
+- **Accessibility-first** approach with ARIA labels and keyboard navigation
 
-## Core Features
+## Quick Start
 
-- User registration and authentication
-- Multi-language form creation (English, German)
-- Dynamic field types (text, email, select, checkbox, etc.)
-- Form validation and error handling
-- Field ordering and configuration
-- RESTful API with proper HTTP status codes
+```bash
+# Clone repository
+git clone https://github.com/darkonikolic/form-builder.git
+cd form-builder
+
+# Setup and start
+make setup
+make up
+
+# Access application
+open http://localhost:8085
+```
+
+See [SETUP.md](SETUP.md) for detailed development instructions.
 
 ## Tech Stack
 
-- **Backend**: Laravel 11, PHP 8.2+
-- **Frontend**: React 18, Tailwind CSS
-- **Database**: PostgreSQL with UUID primary keys
-- **Authentication**: Laravel Sanctum
-- **Testing**: Pest PHP framework
-- **Code Quality**: Pint, Rector, ESLint, Prettier
+| Category           | Technology                             |
+| ------------------ | -------------------------------------- |
+| **Backend**        | Laravel 11, PHP 8.2+, PostgreSQL       |
+| **Frontend**       | React 18, Tailwind CSS, Vite           |
+| **Authentication** | Laravel Sanctum                        |
+| **Testing**        | Pest PHP, PHPUnit                      |
+| **Code Quality**   | Laravel Pint, Rector, ESLint, Prettier |
+| **Development**    | Docker, Docker Compose                 |
 
 ## Project Structure
 
 ```
 form-builder/
-├── app/                    # Laravel application root
-│   ├── app/               # Laravel app directory
-│   │   ├── Http/          # Controllers, Requests, Middleware
-│   │   ├── Models/        # Eloquent models
-│   │   ├── Services/      # Business logic layer
-│   │   ├── Repositories/  # Data access layer
-│   │   └── Exceptions/    # Custom exception classes
-│   ├── resources/         # Frontend resources
-│   │   ├── js/            # React frontend
-│   │   │   ├── Components/    # React components
-│   │   │   ├── contexts/      # React context providers
-│   │   │   ├── Pages/         # Page components
-│   │   │   └── components/    # UI components
-│   │   ├── css/           # Stylesheets
-│   │   └── views/         # Blade templates
-│   ├── routes/            # API and web routes
-│   ├── tests/             # Test suite
-│   ├── database/          # Migrations and seeders
-│   └── config/            # Laravel configuration
-├── docker/                # Docker configuration
-├── config/                # Project configuration
-└── task/                  # Project requirements
+├── app/                    # Laravel application
+│   ├── Http/              # Controllers, Requests, Middleware
+│   ├── Models/            # Eloquent models
+│   ├── Services/          # Business logic layer
+│   ├── Repositories/      # Data access layer
+│   └── Exceptions/        # Custom exception classes
+├── resources/js/          # React frontend
+│   ├── Components/        # React components
+│   ├── contexts/          # React context providers
+│   ├── hooks/             # Custom React hooks
+│   └── components/ui/     # Reusable UI components
+├── routes/                # API and web routes
+├── tests/                 # Test suite
+└── docker/                # Development environment
+```
+
+## API Endpoints
+
+| Method   | Endpoint                 | Description         |
+| -------- | ------------------------ | ------------------- |
+| `POST`   | `/api/register`          | User registration   |
+| `POST`   | `/api/login`             | User authentication |
+| `POST`   | `/api/logout`            | User logout         |
+| `GET`    | `/api/forms`             | List user forms     |
+| `POST`   | `/api/forms`             | Create new form     |
+| `GET`    | `/api/forms/{id}`        | Get specific form   |
+| `PUT`    | `/api/forms/{id}`        | Update form         |
+| `DELETE` | `/api/forms/{id}`        | Delete form         |
+| `GET`    | `/api/forms/{id}/fields` | List form fields    |
+| `POST`   | `/api/forms/{id}/fields` | Add field to form   |
+
+## Documentation
+
+- **Interactive API Docs**: http://localhost:8085/api/documentation
+- **Raw OpenAPI**: http://localhost:8085/api/documentation.json
+- **Setup Guide**: [SETUP.md](SETUP.md)
+
+## Testing
+
+```bash
+# Run all tests
+make test
+
+# Run specific test suites
+make test Feature/Forms
+make test Feature/Fields
+make test Feature/Auth
+```
+
+## Development
+
+### Code Quality
+
+```bash
+make pint          # PHP code style
+make rector        # PHP improvements
+make lint          # JavaScript linting
+make format        # JavaScript formatting
+make check-all     # Complete quality pipeline
+```
+
+### Container Management
+
+```bash
+make up            # Start services
+make down          # Stop services
+make logs          # View logs
+make shell-php     # PHP container access
 ```
 
 ## Key Implementation Details
 
 ### Multi-language Support
 
-Forms and fields support multiple locales. Users can create forms in different languages, and the system ensures all required translations are provided for selected locales.
+Forms and fields support multiple locales with automatic validation ensuring all required translations are provided.
 
 ### Field System
 
-The application supports various field types with configurable properties:
-
-- Basic fields: text, email, number, textarea
-- Choice fields: select, radio, checkbox
-- Special fields: file, date, time, color, range
+Extensible field system supporting various types with configurable properties, validation rules, and conditional logic.
 
 ### Validation System
 
-Comprehensive validation ensures data integrity:
+Multi-level validation system ensuring data integrity across forms, fields, and user interactions.
 
-- Form-level validation (names, descriptions, locales)
-- Field-level validation (types, configurations, labels)
+### Security
+
+- CSRF protection
+- SQL injection prevention
+- XSS protection
 - User ownership verification
-- Cross-reference validation between forms and fields
+- Input sanitization
 
-### Testing Strategy
+## Production Readiness
 
-- Feature tests for API endpoints
-- Model tests for data integrity
-- Authentication and authorization tests
-- Validation and error handling tests
+This application is designed for production use with:
 
-## Getting Started
-
-See [SETUP.md](SETUP.md) for detailed setup instructions.
-
-## API Documentation
-
-This project includes comprehensive **Swagger/OpenAPI documentation** that automatically generates interactive API documentation.
-
-### Access Swagger Documentation
-
-Once the application is running, you can access the API documentation at:
-
-- **Interactive Swagger UI**: http://localhost:8085/api/documentation
-- **Raw OpenAPI JSON**: http://localhost:8085/api/documentation.json
-
-The Swagger UI provides:
-
-- Interactive API testing interface
-- Request/response examples
-- Authentication requirements
-- All available endpoints with parameters
-- Response schemas and error codes
-
-### API Endpoints
-
-- `POST /api/register` - User registration
-- `POST /api/login` - User authentication
-- `POST /api/logout` - User logout
-- `GET /api/forms` - List user forms
-- `POST /api/forms` - Create new form
-- `GET /api/forms/{id}` - Get specific form
-- `PUT /api/forms/{id}` - Update form
-- `DELETE /api/forms/{id}` - Delete form
-- `GET /api/forms/{id}/fields` - List form fields
-- `POST /api/forms/{id}/fields` - Add field to form
-
-## Access Points
-
-- **Backend API**: http://localhost:8085
-- **Swagger Documentation**: http://localhost:8085/api/documentation
-- **pgAdmin Database Management**: http://localhost:8081
-
-### Database Access
-
-**pgAdmin Login Credentials:**
-
-- **Email**: admin@admin.com
-- **Password**: admin
-
-**Database Connection Details:**
-
-- **Hostname**: postgres
-- **Database Name**: form_builder
-- **Username**: postgres
-- **Password**: postgres
-- **Port**: 5432
-
-pgAdmin provides a web-based interface for:
-
-- Database management and administration
-- SQL query execution
-- Table structure inspection
-- Data browsing and editing
-- Database backup and restore operations
-
-## Development Workflow
-
-1. **Code Quality**: Run `make check-all` to ensure all quality standards are met
-2. **Testing**: Write tests for new features, run `make test` to verify
-3. **Documentation**: Update Swagger docs when API changes
-4. **Validation**: Ensure all inputs are properly validated
-
-## What This Demonstrates
-
-This project shows:
-
-- Understanding of modern web development practices
-- Ability to build full-stack applications
-- Knowledge of Laravel and React ecosystems
-- Testing and code quality awareness
-- API design and documentation skills
-- Multi-language application architecture
+- **Scalable architecture** following Laravel best practices
+- **Comprehensive error handling** with custom exceptions
+- **Performance optimization** with proper database indexing
+- **Security best practices** following OWASP guidelines
+- **Monitoring and logging** capabilities
+- **Docker deployment** ready
 
 ## Future Enhancements
 
-While this is a demonstration project, it could be extended with:
-
-- Additional field types and validation rules
-- Form templates and sharing
-- Response collection and analytics
-- Advanced user permissions
+- Advanced form templates and sharing
 - Real-time collaboration features
-
-## Backend Improvement Guidelines
-
-For production-ready applications, consider these architectural enhancements:
-
-### Code Organization & Consistency
-
-- **Response Helper**: Centralize JSON responses using existing `ResponseService` for uniform API structure
-- **Exception Model**: Add API error codes alongside messages for better client-side error handling and internationalization
-- **DTOs**: Introduce lightweight Data Transfer Objects for service input/output instead of raw arrays
-
-### Security & Authorization
-
-- **Fine-grained Policies**: Replace service-level ownership checks with Laravel Policies (`FormPolicy`, `FieldPolicy`) and `authorizeResource` in controllers
-- **Input Validation**: Add UUID validation rules for route parameters (`formId`, `fieldId`) or implement custom route model binding
-
-### Performance & Scalability
-
-- **Database Optimization**: Implement eager loading (`with()`) and pagination for list endpoints to avoid N+1 queries
-- **Transactions**: Wrap multi-step operations (e.g., form + fields creation) in database transactions for data consistency
-
-### Internationalization & Configuration
-
-- **Language Files**: Extract validation messages to `lang/en/validation.php` using `__()` helper
-- **Configuration Validation**: Add fail-fast checks for required config values like `form-builder.valid_locales`
-
-### API Design
-
-- **Status Codes**: Document the choice of 404 vs 403 for unauthorized resource access in Swagger/README
-- **Repository Layer**: Evaluate if the repository pattern adds value or consider simplifying for simpler use cases
-
-## Frontend Improvement Guidelines
-
-For production-ready applications, consider these frontend enhancements:
-
-### User Experience & Feedback
-
-- **Form Validation**: Add proper validation feedback with error states, success messages, and real-time validation
-- **Loading States**: Implement loading indicators, skeleton screens, and progress bars for all async operations
-- **Mobile UX**: Ensure touch targets are at least 44px, implement better mobile gestures and responsive interactions
-- **Error Handling**: Create granular error boundaries for different sections and better error recovery mechanisms
-
-### Advanced Features
-
-- **TypeScript**: Implement type safety to improve development experience and catch errors at compile time
-- **Testing**: Add comprehensive unit and integration tests for all React components and hooks
-- **Performance**: Implement bundle analysis, code splitting, and lazy loading for better performance
-- **Offline Support**: Add service worker for offline functionality, data caching, and sync when online
-
-### Code Quality & Architecture
-
-- **Component Reusability**: Make components more generic and configurable for better reusability
-- **State Management**: Consider advanced state management solutions for complex state requirements
-- **Performance Monitoring**: Add performance metrics, bundle size analysis, and runtime performance tracking
-- **Accessibility**: Enhance keyboard navigation, focus management, and screen reader support
-
-### Design System
-
-- **Theme Support**: Implement CSS variables, theme switching, and dark mode support
-- **Animations**: Add smooth transitions, micro-interactions, and loading state animations
-- **Responsive Design**: Implement custom breakpoints, container queries, and better mobile-first approach
+- Response collection and analytics
+- Advanced user permissions and roles
+- API rate limiting and caching
+- Webhook integrations
+- Advanced field types and validation rules
 
 ## License
 
-This project is for demonstration purposes.
+This project is licensed under the MIT License.

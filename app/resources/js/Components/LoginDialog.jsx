@@ -103,7 +103,7 @@ export default function LoginDialog({ isOpen, onOpenChange, onSuccess }) {
         <BaseDialog
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            title={isLogin ? 'Welcome Back! 🔐' : 'Create Account ✨'}
+            title={isLogin ? 'Welcome Back' : 'Create Account'}
             description={
                 isLogin
                     ? 'Sign in to your account'
@@ -149,14 +149,14 @@ export default function LoginDialog({ isOpen, onOpenChange, onSuccess }) {
                             onClick={() => {
                                 setFormData({
                                     ...formData,
-                                    email: 'demo@example.com',
+                                    email: 'test@example.com',
                                     password: 'password',
                                 });
                             }}
                             className="w-full text-left p-2 text-xs bg-white border border-slate-200 rounded hover:bg-slate-50 transition-colors"
                         >
-                            <span className="font-medium">Demo User:</span>{' '}
-                            demo@example.com / password
+                            <span className="font-medium">Test User:</span>{' '}
+                            test@example.com / password
                         </button>
                     </div>
                 </div>

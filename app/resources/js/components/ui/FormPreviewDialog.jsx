@@ -1,7 +1,7 @@
 import BaseDialog from '@/components/ui/BaseDialog';
 import ActionButton from '@/components/ui/ActionButton';
 
-export default function DemoDialog({ isOpen, onOpenChange }) {
+export default function FormPreviewDialog({ isOpen, onOpenChange }) {
     return (
         <BaseDialog
             isOpen={isOpen}

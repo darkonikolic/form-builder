@@ -1,4 +1,4 @@
-# Form Builder Setup Guide
+# Development Setup
 
 ## Prerequisites
 
@@ -6,38 +6,40 @@
 - Node.js 18+ (for local development)
 - PHP 8.2+ (for local development)
 
-## Quick Setup
-
-### 1. Clone and setup
+## Quick Start
 
 ```bash
-git clone https://github.com/dnikolic/form-builder.git
+# Clone and setup
+git clone https://github.com/darkonikolic/form-builder.git
 cd form-builder
 make setup
-```
 
-### 2. Start services
-
-```bash
+# Start services
 make up
+
+# Access application
+open http://localhost:8085
 ```
 
-### 3. Run quality checks
+## Development Commands
 
-```bash
-make check-all
-```
-
-## Available Commands
-
-### Development Commands
+### Code Quality
 
 ```bash
 make pint          # PHP code style
 make rector        # PHP improvements
 make lint          # JavaScript linting
 make format        # JavaScript formatting
+make check-all     # Complete quality pipeline
+```
+
+### Testing
+
+```bash
 make test          # Run all tests
+make test Feature/Forms    # Forms test suite
+make test Feature/Fields   # Fields test suite
+make test Feature/Auth     # Authentication tests
 ```
 
 ### Container Management
@@ -58,31 +60,17 @@ make shell-node     # Node.js container shell
 make shell-postgres # Database shell
 ```
 
-## Testing
+## Access Points
 
-### Run all tests
+| Service        | URL                   | Credentials             |
+| -------------- | --------------------- | ----------------------- |
+| **Web App**    | http://localhost:8085 | -                       |
+| **pgAdmin**    | http://localhost:8081 | admin@admin.com / admin |
+| **PostgreSQL** | localhost:5433        | postgres / postgres     |
 
-```bash
-make test
-```
+## Quality Checks
 
-### Run specific test suite
-
-```bash
-docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="FormApiTest"
-docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="FieldApiTest"
-docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="ApiAuthTest"
-```
-
-### Run individual tests
-
-```bash
-docker compose -f docker/docker-compose.yml exec php ./vendor/bin/pest --filter="user can create form"
-```
-
-## Code Quality Checks
-
-The `make check-all` command runs the complete quality check pipeline:
+The `make check-all` command runs the complete quality pipeline:
 
 1. **Laravel Pint** - PHP code style fixing
 2. **Rector** - PHP code improvements
@@ -92,17 +80,17 @@ The `make check-all` command runs the complete quality check pipeline:
 6. **Database** - Test database recreation
 7. **Tests** - Complete test suite execution
 
-## Access Points
-
-- **Web App**: http://localhost:8085
-- **pgAdmin**: http://localhost:8081
-  - Email: admin@admin.com
-  - Password: admin
-- **PostgreSQL**: localhost:5433
-
 ## Troubleshooting
 
-- **Port conflicts**: Check if ports 8085, 8081, 5433 are free
+- **Port conflicts**: Ensure ports 8085, 8081, 5433 are available
 - **Build errors**: Run `make clean` then `make setup`
 - **Service issues**: Check logs with `make logs`
-- **Test failures**: Ensure database is running and migrations are fresh
+- **Test failures**: Verify database is running and migrations are fresh
+
+## Development Workflow
+
+1. **Setup**: `make setup` for initial configuration
+2. **Development**: `make up` to start services
+3. **Quality**: `make check-all` before commits
+4. **Testing**: `make test` to verify functionality
+5. **Cleanup**: `make down` when finished

@@ -41,7 +41,7 @@ export default function Welcome({ onLoginClick, onRegisterClick }) {
                 <CardContent className="space-y-4">
                     <div className="text-center space-y-4">
                         <p className="text-sm text-slate-500">
-                            Ready to build amazing forms?
+                            Ready to build professional forms?
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3">
                             <Button
@@ -81,10 +81,11 @@ export default function Welcome({ onLoginClick, onRegisterClick }) {
                             <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
                                 <DialogHeader>
                                     <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                                        Welcome to Form Builder! 🚀
+                                        Welcome to Form Builder
                                     </DialogTitle>
                                     <DialogDescription className="text-slate-600 mt-2">
-                                        Let's create something amazing together
+                                        Let's create something professional
+                                        together
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">

@@ -39,7 +39,6 @@ function Dashboard() {
 
     const handleRefreshTabs = useCallback(async () => {
         setIsValidatingTabs(true);
-        // Note: refreshTabs function was removed, this is just a placeholder
         // In a real implementation, you would call the actual refresh function
         setTimeout(() => setIsValidatingTabs(false), 1000);
     }, []);

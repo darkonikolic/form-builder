@@ -119,7 +119,7 @@ export default function CreateFormDialog({ isOpen, onOpenChange, onSuccess }) {
         <BaseDialog
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            title="Create New Form ✨"
+            title="Create New Form"
             description="Create a new form with multiple language support"
             size="large"
         >

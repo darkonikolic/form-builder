@@ -53,8 +53,8 @@ function DashboardTabs({
                             <button
                                 onClick={onOpenDemoDialog}
                                 className={`${BUTTON_SIZES.icon.md} rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors mr-1`}
-                                title="Open Form (Demo)"
-                                aria-label="Open form in demo mode"
+                                title="Open Form"
+                                aria-label="Open form"
                                 role="button"
                                 tabIndex={0}
                             >

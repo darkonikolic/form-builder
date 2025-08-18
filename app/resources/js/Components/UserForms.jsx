@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Trash2, ExternalLink, Plus, Loader2, Edit } from 'lucide-react';
 import CreateFormDialog from '@/Components/CreateFormDialog';
-import DemoDialog from '@/components/ui/DemoDialog';
+import FormPreviewDialog from '@/components/ui/FormPreviewDialog';
 
 export default function UserForms({ onOpenForm }) {
     const { user, loading: authLoading } = useAuth();
@@ -24,7 +24,7 @@ export default function UserForms({ onOpenForm }) {
         formName: '',
     });
 
-    const [demoDialog, setDemoDialog] = useState(false);
+    const [isFormPreviewOpen, setIsFormPreviewOpen] = useState(false);
 
     useEffect(() => {
         // Only fetch forms if user is authenticated
@@ -257,7 +257,9 @@ export default function UserForms({ onOpenForm }) {
 
                                     <div className="flex gap-2 pt-2">
                                         <Button
-                                            onClick={() => setDemoDialog(true)}
+                                            onClick={() =>
+                                                setIsFormPreviewOpen(true)
+                                            }
                                             className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
                                         >
                                             <ExternalLink className="h-4 w-4 mr-2" />
@@ -352,8 +354,11 @@ export default function UserForms({ onOpenForm }) {
                 </div>
             )}
 
-            {/* Demo Dialog */}
-            <DemoDialog isOpen={demoDialog} onOpenChange={setDemoDialog} />
+            {/* Form Preview Dialog */}
+            <FormPreviewDialog
+                isOpen={isFormPreviewOpen}
+                onOpenChange={setIsFormPreviewOpen}
+            />
 
             {/* Create Form Dialog */}
             <CreateFormDialog
