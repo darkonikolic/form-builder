@@ -26,9 +26,9 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email je obavezan.',
-            'email.email' => 'Email mora biti u validnom formatu.',
-            'password.required' => 'Lozinka je obavezna.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Email must be in a valid format.',
+            'password.required' => 'Password is required.',
         ];
     }
 
