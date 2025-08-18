@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\AuthenticationException as AppAuthenticationException;
+use App\Exceptions\ResourceNotFoundException as AppResourceNotFoundException;
+use App\Exceptions\ServerException as AppServerException;
+use App\Http\Middleware\ViteMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,12 +20,31 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            \App\Http\Middleware\ViteMiddleware::class,
+            AddLinkHeadersForPreloadedAssets::class,
+            ViteMiddleware::class,
         ]);
 
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->renderable(function (AppAuthenticationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 401);
+        });
+
+        $exceptions->renderable(function (AppResourceNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 404);
+        });
+
+        $exceptions->renderable(function (AppServerException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        });
     })->create();

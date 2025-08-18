@@ -7,7 +7,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Schema(
@@ -61,6 +63,8 @@ class Form extends Model
     use HasFactory;
     use HasUuids;
 
+    private const VALID_LOCALES = ['en', 'de', 'it', 'fr'];
+
     protected $casts = [
         'is_active' => 'boolean',
         'name' => 'array',
@@ -83,7 +87,7 @@ class Form extends Model
     }
 
     // Relationship with User model
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -98,23 +102,29 @@ class Form extends Model
         });
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateFormConfiguration(): void
     {
         $config = $this->configuration ?? [];
         $locales = $config['locales'] ?? [];
 
         // Validate if locales are valid
-        $validLocales = ['en', 'de', 'it', 'fr'];
         foreach ($locales as $locale) {
-            if (!in_array($locale, $validLocales)) {
-                throw new \Exception("Invalid locale: {$locale}");
+            if (!in_array($locale, self::VALID_LOCALES, true)) {
+                throw ValidationException::withMessages([
+                    "configuration.locales.{$locale}" => ["Invalid locale: {$locale}. Allowed: " . implode(', ', self::VALID_LOCALES)],
+                ]);
             }
         }
 
         // Validate if name is present for all locales
         foreach ($locales as $locale) {
             if (!isset($this->name[$locale]) || empty($this->name[$locale])) {
-                throw new \Exception("Missing name for locale: {$locale}");
+                throw ValidationException::withMessages([
+                    "name.{$locale}" => ["Missing name for locale: {$locale}"],
+                ]);
             }
         }
 
@@ -122,7 +132,9 @@ class Form extends Model
         $nameLocales = array_keys($this->name ?? []);
         foreach ($nameLocales as $locale) {
             if (!in_array($locale, $locales)) {
-                throw new \Exception("Name has unregistered locale: {$locale}. Only registered locales are allowed.");
+                throw ValidationException::withMessages([
+                    "name.{$locale}" => ["Name has unregistered locale: {$locale}. Only registered locales are allowed."],
+                ]);
             }
         }
 
@@ -131,7 +143,9 @@ class Form extends Model
             $descriptionLocales = array_keys($this->description);
             foreach ($descriptionLocales as $locale) {
                 if (!in_array($locale, $locales)) {
-                    throw new \Exception("Description has unregistered locale: {$locale}. Only registered locales are allowed.");
+                    throw ValidationException::withMessages([
+                        "description.{$locale}" => ["Description has unregistered locale: {$locale}. Only locales registered in form are allowed."],
+                    ]);
                 }
             }
         }

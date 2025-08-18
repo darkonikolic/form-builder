@@ -90,10 +90,47 @@ class Field extends Model
         parent::boot();
 
         static::saving(function ($model): void {
+            $model->syncTypeFields();
             $model->validateFieldData();
         });
     }
 
+    /**
+     * Automatically sync type column with configuration.type.
+     */
+    /**
+     * @throws ValidationException
+     */
+    private function syncTypeFields(): void
+    {
+        $config = $this->configuration ?? [];
+
+        // Validate field type if it's set
+        if (isset($this->type)) {
+            $validTypes = ['text', 'email', 'password', 'number', 'textarea', 'select', 'checkbox', 'radio', 'file', 'date', 'time', 'datetime-local', 'url', 'tel', 'search', 'color', 'range', 'hidden'];
+
+            if (!in_array($this->type, $validTypes)) {
+                throw ValidationException::withMessages([
+                    'type' => ['Invalid field type: ' . $this->type . '. Valid types are: ' . implode(', ', $validTypes)],
+                ]);
+            }
+        }
+
+        // If configuration.type is set, sync it to the type column
+        if (isset($config['type']) && $config['type'] !== $this->type) {
+            $this->type = $config['type'];
+        }
+
+        // If type column is set but configuration.type is not, sync it to configuration
+        if (isset($this->type) && (!isset($config['type']) || $config['type'] !== $this->type)) {
+            $config['type'] = $this->type;
+            $this->configuration = $config;
+        }
+    }
+
+    /**
+     * @throws ValidationException
+     */
     private function validateAllowedAttributes(array $config, array $allowedAttributes, string $typeName): void
     {
         $configKeys = array_keys($config);
@@ -101,17 +138,21 @@ class Field extends Model
         foreach ($configKeys as $key) {
             if (!in_array($key, $allowedAttributes) &&
                 !in_array($key, ['type', 'name', 'label', 'required', 'class', 'style', 'placeholder'])) {
-                throw new \Exception("Attribute '{$key}' is not allowed for {$typeName} fields. Allowed: " . implode(', ', $allowedAttributes));
+                throw ValidationException::withMessages([
+                    "configuration.{$key}" => ["Attribute '{$key}' is not allowed for {$typeName} fields. Allowed: " . implode(', ', $allowedAttributes)],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateBasicConfiguration(): void
     {
         $config = $this->configuration ?? [];
 
         $rules = [
-            'type' => 'required|string|in:text,email,password,number,textarea,select,checkbox,radio,file,date,time,datetime-local,url,tel,search,color,range,hidden',
             'required' => 'boolean',
             'default_value' => 'nullable|string|max:1000',
             'class' => 'nullable|string|max:500',
@@ -125,6 +166,9 @@ class Field extends Model
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateCheckboxTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -134,6 +178,9 @@ class Field extends Model
         $this->validateAllowedAttributes($config, $allowedAttributes, 'checkbox-type');
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateColorTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -143,6 +190,9 @@ class Field extends Model
         $this->validateAllowedAttributes($config, $allowedAttributes, 'color-type');
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateDateTimeTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -157,33 +207,48 @@ class Field extends Model
             $maxDate = strtotime($config['max']);
 
             if ($minDate === false || $maxDate === false) {
-                throw new \Exception('Invalid date format for min/max values');
+                throw ValidationException::withMessages([
+                    'configuration.min' => ['Invalid date format for min value'],
+                    'configuration.max' => ['Invalid date format for max value'],
+                ]);
             }
 
             if ($minDate >= $maxDate) {
-                throw new \Exception('min date must be before max date');
+                throw ValidationException::withMessages([
+                    'configuration.min' => ['Min date must be before max date'],
+                    'configuration.max' => ['Max date must be after min date'],
+                ]);
             }
         }
 
         // Step validation for time fields
-        if (isset($config['step']) && in_array($config['type'], ['time', 'datetime-local'])) {
+        if (isset($config['step']) && in_array($this->type, ['time', 'datetime-local'])) {
             if (!preg_match('/^\d+$/', $config['step'])) {
-                throw new \Exception('Step must be a positive integer for time fields');
+                throw ValidationException::withMessages([
+                    'configuration.step' => ['Step must be a positive integer for time fields'],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateFieldData(): void
     {
         $form = $this->form;
         if (!$form) {
-            throw new ValidationException('Field must belong to a form');
+            throw ValidationException::withMessages([
+                'form_id' => ['Field must belong to a form'],
+            ]);
         }
 
         $formLocales = $form->configuration['locales'] ?? [];
 
         if (empty($formLocales)) {
-            throw new ValidationException('Form must have locales defined');
+            throw ValidationException::withMessages([
+                'configuration.locales' => ['Form must have locales defined'],
+            ]);
         }
 
         // 1. Validate basic configuration
@@ -199,10 +264,13 @@ class Field extends Model
         $this->validateValidationRules($formLocales);
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateFieldTypeSpecific(): void
     {
         $config = $this->configuration ?? [];
-        $type = $config['type'] ?? '';
+        $type = $this->type ?? '';
 
         // Validate required fields for all types
         $this->validateRequiredFields($config);
@@ -257,6 +325,9 @@ class Field extends Model
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateFileTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -271,12 +342,17 @@ class Field extends Model
             foreach ($acceptTypes as $type) {
                 $type = trim($type);
                 if (!preg_match('/^(\*\/\*|[a-z]+\/[a-z0-9.-]+|[a-z]+\.[a-z0-9.-]+)$/i', $type)) {
-                    throw new \Exception("Invalid accept type format: {$type}");
+                    throw ValidationException::withMessages([
+                        'configuration.accept' => ["Invalid accept type format: {$type}"],
+                    ]);
                 }
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateHiddenTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -286,13 +362,18 @@ class Field extends Model
         $this->validateAllowedAttributes($config, $allowedAttributes, 'hidden-type');
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateI18nData(array $requiredLocales): void
     {
         $config = $this->configuration ?? [];
 
         foreach ($requiredLocales as $locale) {
             if (!isset($config['label'][$locale]) || empty($config['label'][$locale])) {
-                throw new ValidationException("Missing label for locale: {$locale}");
+                throw ValidationException::withMessages([
+                    "configuration.label.{$locale}" => ["Missing label for locale: {$locale}"],
+                ]);
             }
         }
 
@@ -301,7 +382,11 @@ class Field extends Model
             $labelLocales = array_keys($config['label']);
             foreach ($labelLocales as $locale) {
                 if (!in_array($locale, $requiredLocales)) {
-                    throw new ValidationException("Label has unregistered locale: {$locale}. Only locales registered in form are allowed.");
+                    throw ValidationException::withMessages([
+                        "configuration.label.{$locale}" => [
+                            "Label has unregistered locale: {$locale}. Only locales registered in form are allowed.",
+                        ],
+                    ]);
                 }
             }
         }
@@ -313,7 +398,11 @@ class Field extends Model
                     $optionLabelLocales = array_keys($option['label']);
                     foreach ($optionLabelLocales as $locale) {
                         if (!in_array($locale, $requiredLocales)) {
-                            throw new ValidationException("Option {$index} label has unregistered locale: {$locale}. Only locales registered in form are allowed.");
+                            throw ValidationException::withMessages([
+                                "configuration.options.{$index}.label.{$locale}" => [
+                                    "Option {$index} label has unregistered locale: {$locale}. Only locales registered in form are allowed.",
+                                ],
+                            ]);
                         }
                     }
                 }
@@ -327,7 +416,11 @@ class Field extends Model
                     $messageLocales = array_keys($messages);
                     foreach ($messageLocales as $locale) {
                         if (!in_array($locale, $requiredLocales)) {
-                            throw new ValidationException("Validation message for rule '{$ruleName}' has unregistered locale: {$locale}. Only locales registered in form are allowed.");
+                            throw ValidationException::withMessages([
+                                "configuration.validation.messages.{$ruleName}.{$locale}" => [
+                                    "Validation message for rule '{$ruleName}' has unregistered locale: {$locale}. Only locales registered in form are allowed.",
+                                ],
+                            ]);
                         }
                     }
                 }
@@ -342,7 +435,11 @@ class Field extends Model
                     $uiLocales = array_keys($config['ui'][$element]);
                     foreach ($uiLocales as $locale) {
                         if (!in_array($locale, $requiredLocales)) {
-                            throw new ValidationException("UI element '{$element}' has unregistered locale: {$locale}. Only locales registered in form are allowed.");
+                            throw ValidationException::withMessages([
+                                "configuration.ui.{$element}.{$locale}" => [
+                                    "UI element '{$element}' has unregistered locale: {$locale}. Only locales registered in form are allowed.",
+                                ],
+                            ]);
                         }
                     }
                 }
@@ -350,6 +447,9 @@ class Field extends Model
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateNumberTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -361,18 +461,26 @@ class Field extends Model
         // Cross-field validation
         if (isset($config['min']) && isset($config['max'])) {
             if ($config['min'] >= $config['max']) {
-                throw new \Exception('min must be less than max');
+                throw ValidationException::withMessages([
+                    'configuration.min' => ['Min value must be less than max value'],
+                    'configuration.max' => ['Max value must be greater than min value'],
+                ]);
             }
         }
 
         if (isset($config['step']) && isset($config['min']) && isset($config['max'])) {
             $range = $config['max'] - $config['min'];
             if ($config['step'] > $range) {
-                throw new \Exception('step cannot be greater than the range between min and max');
+                throw ValidationException::withMessages([
+                    'configuration.step' => ['Step cannot be greater than the range between min and max'],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateRequiredFields(array $config): void
     {
         // Required fields for ALL field types
@@ -380,11 +488,16 @@ class Field extends Model
 
         foreach ($requiredFields as $field) {
             if (!isset($config[$field]) || empty($config[$field])) {
-                throw new \Exception("Field '{$field}' is required for all field types");
+                throw ValidationException::withMessages([
+                    "configuration.{$field}" => ["Field '{$field}' is required for all field types"],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateSelectTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -395,23 +508,32 @@ class Field extends Model
 
         // Options validation (required for select/radio)
         if (!isset($config['options']) || !is_array($config['options']) || empty($config['options'])) {
-            throw new \Exception('Options array is required for select/radio fields');
+            throw ValidationException::withMessages([
+                'configuration.options' => ['Options array is required for select/radio fields'],
+            ]);
         }
 
         foreach ($config['options'] as $index => $option) {
             if (!isset($option['value']) || !isset($option['label'])) {
-                throw new \Exception("Option {$index} must have both 'value' and 'label'");
+                throw ValidationException::withMessages([
+                    "configuration.options.{$index}" => ["Option {$index} must have both 'value' and 'label'"],
+                ]);
             }
         }
 
         // Size validation for multiple select
         if (isset($config['multiple']) && $config['multiple'] && isset($config['size'])) {
             if ($config['size'] < 2) {
-                throw new \Exception('Size must be at least 2 for multiple select fields');
+                throw ValidationException::withMessages([
+                    'configuration.size' => ['Size must be at least 2 for multiple select fields'],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateTextareaTypeFields(array $config): void
     {
         $allowedAttributes = [
@@ -424,11 +546,17 @@ class Field extends Model
         // Cross-field validation
         if (isset($config['minlength']) && isset($config['maxlength'])) {
             if ($config['minlength'] > $config['maxlength']) {
-                throw new \Exception('minlength cannot be greater than maxlength');
+                throw ValidationException::withMessages([
+                    'configuration.minlength' => ['Minlength cannot be greater than maxlength'],
+                    'configuration.maxlength' => ['Maxlength cannot be less than minlength'],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateTextTypeFields(array $config): void
     {
         // HTML attributes for text-type inputs
@@ -442,11 +570,17 @@ class Field extends Model
         // Cross-field validation
         if (isset($config['minlength']) && isset($config['maxlength'])) {
             if ($config['minlength'] > $config['maxlength']) {
-                throw new \Exception('minlength cannot be greater than maxlength');
+                throw ValidationException::withMessages([
+                    'configuration.minlength' => ['Minlength cannot be greater than maxlength'],
+                    'configuration.maxlength' => ['Maxlength cannot be less than minlength'],
+                ]);
             }
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validateValidationRules(array $requiredLocales): void
     {
         $rules = $this->validation_rules ?? [];
@@ -458,13 +592,17 @@ class Field extends Model
         foreach ($rules as $ruleName => $rule) {
             // Check if rule has implementation
             if (!isset($rule['error_messages'])) {
-                throw new \Exception("Rule '{$ruleName}' must have error_messages");
+                throw ValidationException::withMessages([
+                    "validation_rules.{$ruleName}" => ["Rule '{$ruleName}' must have error_messages"],
+                ]);
             }
 
             // Check if rule has error messages for all locales
             foreach ($requiredLocales as $locale) {
                 if (!isset($rule['error_messages'][$locale])) {
-                    throw new \Exception("Rule '{$ruleName}' missing error message for locale: {$locale}");
+                    throw ValidationException::withMessages([
+                        "validation_rules.{$ruleName}.error_messages.{$locale}" => ["Rule '{$ruleName}' missing error message for locale: {$locale}"],
+                    ]);
                 }
             }
         }

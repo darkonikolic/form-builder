@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class LoginRequest extends FormRequest
+class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +26,15 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email je obavezan.',
-            'email.email' => 'Email mora biti u validnom formatu.',
-            'password.required' => 'Lozinka je obavezna.',
+            'name.required' => 'Name is required.',
+            'name.max' => 'Name cannot be longer than 255 characters.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Email must be in valid format.',
+            'email.max' => 'Email cannot be longer than 255 characters.',
+            'email.unique' => 'The email has already been taken.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ];
     }
 
@@ -40,8 +46,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ];
     }
 

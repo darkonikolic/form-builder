@@ -428,8 +428,8 @@
                     "Fields"
                 ],
                 "summary": "Get a specific field",
-                "description": "Retrieve a specific field by ID for the authenticated user",
-                "operationId": "getField",
+                "description": "Get a specific field by ID for the authenticated user",
+                "operationId": "showField",
                 "parameters": [
                     {
                         "name": "form_id",
@@ -493,7 +493,7 @@
                         }
                     },
                     "404": {
-                        "description": "Form or field not found",
+                        "description": "Field not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -504,30 +504,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Form or field not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Failed to retrieve field"
-                                        },
-                                        "error": {
-                                            "type": "string"
+                                            "example": "Field not found"
                                         }
                                     },
                                     "type": "object"
@@ -598,41 +575,38 @@
                                             "color",
                                             "range",
                                             "hidden"
-                                        ]
+                                        ],
+                                        "example": "text"
                                     },
                                     "order": {
                                         "type": "integer",
-                                        "example": 2
+                                        "example": 1
                                     },
                                     "configuration": {
                                         "properties": {
                                             "name": {
                                                 "type": "string",
-                                                "example": "first_name"
+                                                "example": "field_name"
                                             },
                                             "label": {
                                                 "properties": {
                                                     "en": {
                                                         "type": "string",
-                                                        "example": "First Name"
+                                                        "example": "Field Label"
                                                     },
                                                     "de": {
                                                         "type": "string",
-                                                        "example": "Vorname"
+                                                        "example": "Feld Bezeichnung"
                                                     }
                                                 },
                                                 "type": "object"
                                             },
                                             "required": {
                                                 "type": "boolean",
-                                                "example": false
+                                                "example": true
                                             }
                                         },
                                         "type": "object"
-                                    },
-                                    "validation_rules": {
-                                        "type": "object",
-                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1217,8 +1191,8 @@
                     "Forms"
                 ],
                 "summary": "Get a specific form",
-                "description": "Retrieve a specific form by ID for the authenticated user",
-                "operationId": "getForm",
+                "description": "Get a specific form by ID for the authenticated user",
+                "operationId": "showForm",
                 "parameters": [
                     {
                         "name": "id",
@@ -1290,29 +1264,6 @@
                                 }
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Failed to retrieve form"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
                     }
                 },
                 "security": [
@@ -1350,13 +1301,11 @@
                                         "properties": {
                                             "en": {
                                                 "type": "string",
-                                                "maxLength": 255,
-                                                "example": "Updated Contact Form"
+                                                "example": "Updated Form Name"
                                             },
                                             "de": {
                                                 "type": "string",
-                                                "maxLength": 255,
-                                                "example": "Aktualisiertes Kontaktformular"
+                                                "example": "Aktualisierter Formularname"
                                             }
                                         },
                                         "type": "object"
@@ -1365,20 +1314,18 @@
                                         "properties": {
                                             "en": {
                                                 "type": "string",
-                                                "maxLength": 1000,
-                                                "example": "Updated contact form description"
+                                                "example": "Updated form description"
                                             },
                                             "de": {
                                                 "type": "string",
-                                                "maxLength": 1000,
-                                                "example": "Aktualisierte Kontaktformular-Beschreibung"
+                                                "example": "Aktualisierte Formularbeschreibung"
                                             }
                                         },
                                         "type": "object"
                                     },
                                     "is_active": {
                                         "type": "boolean",
-                                        "example": false
+                                        "example": true
                                     },
                                     "configuration": {
                                         "properties": {
@@ -1395,8 +1342,7 @@
                                                 },
                                                 "example": [
                                                     "en",
-                                                    "de",
-                                                    "it"
+                                                    "de"
                                                 ]
                                             }
                                         },

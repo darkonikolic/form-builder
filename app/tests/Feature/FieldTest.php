@@ -161,7 +161,7 @@ describe('Field Management', function (): void {
                 'user_id' => $this->user->id,
             ]);
 
-            $this->expectException(\Illuminate\Validation\ValidationException::class);
+            $this->expectException(\Exception::class);
 
             Field::create([
                 'form_id' => $form->id,

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Form;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ServerException;
+use App\Http\Requests\Form\StoreFormRequest;
+use App\Http\Requests\Form\UpdateFormRequest;
+use App\Services\FormService;
+use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -18,16 +21,18 @@ use Illuminate\Validation\ValidationException;
  */
 class FormController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct()
-    {
+    public function __construct(
+        private FormService $formService,
+        private ResponseService $responseService,
+    ) {
         $this->middleware('auth:sanctum');
     }
 
     /**
      * Remove the specified form.
+     *
+     * @throws ResourceNotFoundException
+     * @throws ServerException
      *
      * @OA\Delete(
      *     path="/api/forms/{id}",
@@ -93,32 +98,15 @@ class FormController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        try {
-            $form = Auth::user()->forms()->findOrFail($id);
+        $this->formService->deleteUserForm(Auth::user(), $id);
 
-            // Delete form (fields will be deleted automatically due to cascade)
-            $form->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Form deleted successfully',
-            ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Form not found',
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete form',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->responseService->successResponse(null, 'Form deleted successfully');
     }
 
     /**
      * Display a listing of the user's forms.
+     *
+     * @throws ServerException
      *
      * @OA\Get(
      *     path="/api/forms",
@@ -165,32 +153,23 @@ class FormController extends Controller
      */
     public function index(): JsonResponse
     {
-        try {
-            $forms = Auth::user()->forms()->orderBy('created_at', 'desc')->get();
+        $forms = $this->formService->getUserForms(Auth::user());
 
-            return response()->json([
-                'success' => true,
-                'data' => $forms,
-                'message' => 'Forms retrieved successfully',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve forms',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->responseService->successResponse($forms, 'Forms retrieved successfully');
     }
 
     /**
      * Display the specified form.
      *
+     * @throws ResourceNotFoundException
+     * @throws ServerException
+     *
      * @OA\Get(
      *     path="/api/forms/{id}",
-     *     operationId="getForm",
+     *     operationId="showForm",
      *     tags={"Forms"},
      *     summary="Get a specific form",
-     *     description="Retrieve a specific form by ID for the authenticated user",
+     *     description="Get a specific form by ID for the authenticated user",
      *     security={{"sanctum":{}}},
      *
      *     @OA\Parameter(
@@ -233,47 +212,20 @@ class FormController extends Controller
      *             @OA\Property(property="success", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Form not found")
      *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Failed to retrieve form"),
-     *             @OA\Property(property="error", type="string")
-     *         )
      *     )
      * )
      */
     public function show(string $id): JsonResponse
     {
-        try {
-            $form = Auth::user()->forms()->findOrFail($id);
+        $form = $this->formService->getUserFormWithFields(Auth::user(), $id);
 
-            return response()->json([
-                'success' => true,
-                'data' => $form->load('fields'),
-                'message' => 'Form retrieved successfully',
-            ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Form not found',
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve form',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->responseService->successResponse($form, 'Form retrieved successfully');
     }
 
     /**
      * Store a newly created form.
+     *
+     * @throws ServerException
      *
      * @OA\Post(
      *     path="/api/forms",
@@ -300,7 +252,7 @@ class FormController extends Controller
      *                 property="description",
      *                 type="object",
      *                 @OA\Property(property="en", type="string", maxLength=1000, example="A contact form for customer inquiries"),
-     *                 @OA\Property(property="de", type="string", maxLength=1000, example="Ein Kontaktformular für Kundenanfragen")
+     *             @OA\Property(property="de", type="string", maxLength=1000, example="Ein Kontaktformular für Kundenanfragen")
      *             ),
      *             @OA\Property(property="is_active", type="boolean", example=true),
      *             @OA\Property(
@@ -365,79 +317,19 @@ class FormController extends Controller
      *     )
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreFormRequest $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'name' => 'required|array',
-                'name.*' => 'required|string|max:255',
-                'description' => 'nullable|array',
-                'description.*' => 'nullable|string|max:1000',
-                'is_active' => 'boolean',
-                'configuration' => 'required|array',
-                'configuration.locales' => 'required|array|min:1',
-                'configuration.locales.*' => 'string|in:en,de,it,fr',
-            ]);
+        $validated = $request->validated();
+        $form = $this->formService->createUserForm(Auth::user(), $validated);
 
-            // Validate that all required locales have values
-            foreach ($validated['configuration']['locales'] as $locale) {
-                if (!isset($validated['name'][$locale]) || empty($validated['name'][$locale])) {
-                    throw ValidationException::withMessages([
-                        "name.{$locale}" => ["Name for locale '{$locale}' is required"],
-                    ]);
-                }
-                if (isset($validated['description']) && (!isset($validated['description'][$locale]) || empty($validated['description'][$locale]))) {
-                    throw ValidationException::withMessages([
-                        "description.{$locale}" => ["Description for locale '{$locale}' is required"],
-                    ]);
-                }
-            }
-
-            // Validate that all name keys are within allowed locales
-            $allowedLocales = $validated['configuration']['locales'];
-            foreach (array_keys($validated['name']) as $locale) {
-                if (!in_array($locale, $allowedLocales)) {
-                    throw ValidationException::withMessages([
-                        "name.{$locale}" => ["Locale '{$locale}' is not in allowed locales: " . implode(', ', $allowedLocales)],
-                    ]);
-                }
-            }
-
-            // Validate that all description keys are within allowed locales (if description exists)
-            if (isset($validated['description'])) {
-                foreach (array_keys($validated['description']) as $locale) {
-                    if (!in_array($locale, $allowedLocales)) {
-                        throw ValidationException::withMessages([
-                            "description.{$locale}" => ["Locale '{$locale}' is not in allowed locales: " . implode(', ', $allowedLocales)],
-                        ]);
-                    }
-                }
-            }
-
-            $form = Auth::user()->forms()->create($validated);
-
-            return response()->json([
-                'success' => true,
-                'data' => $form,
-                'message' => 'Form created successfully',
-            ], 201);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create form',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->responseService->successResponse($form, 'Form created successfully', 201);
     }
 
     /**
      * Update the specified form.
+     *
+     * @throws ResourceNotFoundException
+     * @throws ServerException
      *
      * @OA\Put(
      *     path="/api/forms/{id}",
@@ -464,16 +356,16 @@ class FormController extends Controller
      *             @OA\Property(
      *                 property="name",
      *                 type="object",
-     *                 @OA\Property(property="en", type="string", maxLength=255, example="Updated Contact Form"),
-     *                 @OA\Property(property="de", type="string", maxLength=255, example="Aktualisiertes Kontaktformular")
+     *                 @OA\Property(property="en", type="string", example="Updated Form Name"),
+     *                 @OA\Property(property="de", type="string", example="Aktualisierter Formularname")
      *             ),
      *             @OA\Property(
      *                 property="description",
      *                 type="object",
-     *                 @OA\Property(property="en", type="string", maxLength=1000, example="Updated contact form description"),
-     *                 @OA\Property(property="de", type="string", maxLength=1000, example="Aktualisierte Kontaktformular-Beschreibung")
+     *                 @OA\Property(property="en", type="string", example="Updated form description"),
+     *                 @OA\Property(property="de", type="string", example="Aktualisierte Formularbeschreibung")
      *             ),
-     *             @OA\Property(property="is_active", type="boolean", example=false),
+     *             @OA\Property(property="is_active", type="boolean", example=true),
      *             @OA\Property(
      *                 property="configuration",
      *                 type="object",
@@ -481,8 +373,8 @@ class FormController extends Controller
      *                     property="locales",
      *                     type="array",
      *
-     *                     @OA\Items(type="string", enum={"en","de","it","fr"}),
-     *                     example={"en","de","it"}
+     *                     @OA\Items(type="string", enum={"en", "de", "it", "fr"}),
+     *                     example={"en", "de"}
      *                 )
      *             )
      *         )
@@ -546,69 +438,11 @@ class FormController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateFormRequest $request, string $id): JsonResponse
     {
-        try {
-            $form = Auth::user()->forms()->findOrFail($id);
+        $validated = $request->validated();
+        $form = $this->formService->updateUserForm(Auth::user(), $id, $validated);
 
-            $validated = $request->validate([
-                'name' => 'sometimes|array',
-                'name.*' => 'sometimes|string|max:255',
-                'description' => 'sometimes|nullable|array',
-                'description.*' => 'sometimes|nullable|string|max:1000',
-                'is_active' => 'sometimes|boolean',
-                'configuration' => 'sometimes|array',
-                'configuration.locales' => 'sometimes|array|min:1',
-                'configuration.locales.*' => 'string|in:en,de,it,fr',
-            ]);
-
-            // Additional validation: if name is provided, ensure all locales have values
-            if (isset($validated['name']) && is_array($validated['name'])) {
-                $nameLocales = array_keys($validated['name']);
-                foreach ($nameLocales as $locale) {
-                    if (empty($validated['name'][$locale])) {
-                        throw ValidationException::withMessages([
-                            "name.{$locale}" => ["The name.{$locale} field cannot be empty."],
-                        ]);
-                    }
-                }
-            }
-
-            // Additional validation: if configuration.locales is provided, ensure all locales have name values
-            if (isset($validated['configuration']['locales']) && isset($validated['name'])) {
-                foreach ($validated['configuration']['locales'] as $locale) {
-                    if (!isset($validated['name'][$locale]) || empty($validated['name'][$locale])) {
-                        throw ValidationException::withMessages([
-                            "name.{$locale}" => ["Name for locale '{$locale}' is required when updating configuration.locales"],
-                        ]);
-                    }
-                }
-            }
-
-            $form->update($validated);
-
-            return response()->json([
-                'success' => true,
-                'data' => $form->fresh(),
-                'message' => 'Form updated successfully',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Form not found',
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update form',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->responseService->successResponse($form, 'Form updated successfully');
     }
 }
