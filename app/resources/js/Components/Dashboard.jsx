@@ -9,7 +9,6 @@ import DashboardContent from '@/Components/Dashboard/DashboardContent';
 function Dashboard() {
     const { logout } = useAuth();
     const [isDemoDialogOpen, setIsDemoDialogOpen] = useState(false);
-    const [isValidatingTabs, setIsValidatingTabs] = useState(false);
 
     const {
         activeTab,
@@ -37,19 +36,9 @@ function Dashboard() {
         [closeTab]
     );
 
-    const handleRefreshTabs = useCallback(async () => {
-        setIsValidatingTabs(true);
-        // In a real implementation, you would call the actual refresh function
-        setTimeout(() => setIsValidatingTabs(false), 1000);
-    }, []);
-
     return (
         <div className="min-h-screen bg-slate-50">
-            <DashboardHeader
-                onLogout={handleLogout}
-                onRefreshTabs={handleRefreshTabs}
-                isValidatingTabs={isValidatingTabs}
-            />
+            <DashboardHeader onLogout={handleLogout} />
 
             <DashboardTabs
                 activeTab={activeTab}
@@ -58,7 +47,6 @@ function Dashboard() {
                 onOpenDemoDialog={handleOpenDemoDialog}
                 onCloseTab={handleCloseTab}
                 onResetToDashboard={resetToDashboard}
-                isValidatingTabs={isValidatingTabs}
             />
 
             <DashboardContent
