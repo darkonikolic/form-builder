@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Trash2, ExternalLink, Plus, Loader2, Edit } from 'lucide-react';
 import CreateFormDialog from '@/Components/CreateFormDialog';
+import DemoDialog from '@/components/ui/DemoDialog';
 
 export default function UserForms({ onOpenForm }) {
     const { user, loading: authLoading } = useAuth();
@@ -23,10 +24,7 @@ export default function UserForms({ onOpenForm }) {
         formName: '',
     });
 
-    const [demoDialog, setDemoDialog] = useState({
-        isOpen: false,
-        formName: '',
-    });
+    const [demoDialog, setDemoDialog] = useState(false);
 
     useEffect(() => {
         // Only fetch forms if user is authenticated
@@ -259,16 +257,8 @@ export default function UserForms({ onOpenForm }) {
 
                                     <div className="flex gap-2 pt-2">
                                         <Button
-                                            onClick={() =>
-                                                setDemoDialog({
-                                                    isOpen: true,
-                                                    formName:
-                                                        form.name?.en ||
-                                                        form.name?.de ||
-                                                        'Untitled Form',
-                                                })
-                                            }
-                                            className="flex-1 bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600"
+                                            onClick={() => setDemoDialog(true)}
+                                            className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
                                         >
                                             <ExternalLink className="h-4 w-4 mr-2" />
                                             Open
@@ -363,63 +353,7 @@ export default function UserForms({ onOpenForm }) {
             )}
 
             {/* Demo Dialog */}
-            {demoDialog.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-                        <div className="flex items-center mb-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg
-                                    className="h-6 w-6 text-blue-600"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    Demo Project
-                                </h3>
-                                <p className="text-sm text-gray-500">
-                                    This is a demonstration version
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mb-6">
-                            <p className="text-gray-700 mb-3">
-                                This is a demo project. In the full version, you
-                                would be able to see the generated form layout
-                                and test data entry here.
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                However, since you haven't paid for the premium
-                                version yet, this feature is not available.
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end">
-                            <Button
-                                onClick={() =>
-                                    setDemoDialog({
-                                        isOpen: false,
-                                        formName: '',
-                                    })
-                                }
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                Got it
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DemoDialog isOpen={demoDialog} onOpenChange={setDemoDialog} />
 
             {/* Create Form Dialog */}
             <CreateFormDialog

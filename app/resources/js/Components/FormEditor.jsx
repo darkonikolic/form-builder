@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Save, X } from 'lucide-react';
+import { useApi } from '@/hooks/useApi';
+import ActionButton from '@/components/ui/ActionButton';
+import DemoDialog from '@/components/ui/DemoDialog';
 
 export default function FormEditor({ formId, onClose }) {
+    const { apiCall } = useApi();
     const [form, setForm] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -22,9 +24,7 @@ export default function FormEditor({ formId, onClose }) {
         locales: ['en'],
     });
 
-    const [demoDialog, setDemoDialog] = useState({
-        isOpen: false,
-    });
+    const [demoDialog, setDemoDialog] = useState(false);
 
     useEffect(() => {
         if (formId) {
@@ -35,27 +35,16 @@ export default function FormEditor({ formId, onClose }) {
     const fetchForm = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/forms/${formId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
-                    Accept: 'application/json',
-                },
+            const data = await apiCall(`/forms/${formId}`);
+            setForm(data.data);
+            setFormData({
+                name: data.data.name?.en || '',
+                description: data.data.description?.en || '',
+                is_active: data.data.is_active ?? true,
+                locales: data.data.configuration?.locales || ['en'],
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                setForm(data.data);
-                setFormData({
-                    name: data.data.name?.en || '',
-                    description: data.data.description?.en || '',
-                    is_active: data.data.is_active ?? true,
-                    locales: data.data.configuration?.locales || ['en'],
-                });
-            } else {
-                setError('Failed to fetch form');
-            }
         } catch (error) {
-            setError('Network error occurred');
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -67,13 +56,8 @@ export default function FormEditor({ formId, onClose }) {
             setError('');
             setSuccess('');
 
-            const response = await fetch(`/api/forms/${formId}`, {
+            await apiCall(`/forms/${formId}`, {
                 method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({
                     name: { en: formData.name },
                     description: { en: formData.description },
@@ -84,25 +68,20 @@ export default function FormEditor({ formId, onClose }) {
                 }),
             });
 
-            if (response.ok) {
-                setSuccess('Form updated successfully!');
-                // Update the form state
-                setForm(prev => ({
-                    ...prev,
-                    name: { en: formData.name },
-                    description: { en: formData.description },
-                    is_active: formData.is_active,
-                    configuration: {
-                        ...prev.configuration,
-                        locales: formData.locales,
-                    },
-                }));
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to update form');
-            }
+            setSuccess('Form updated successfully!');
+            // Update the form state
+            setForm(prev => ({
+                ...prev,
+                name: { en: formData.name },
+                description: { en: formData.description },
+                is_active: formData.is_active,
+                configuration: {
+                    ...prev.configuration,
+                    locales: formData.locales,
+                },
+            }));
         } catch (error) {
-            setError('Network error occurred');
+            setError(error.message);
         } finally {
             setSaving(false);
         }
@@ -146,11 +125,10 @@ export default function FormEditor({ formId, onClose }) {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button
-                        onClick={() => setDemoDialog({ isOpen: true })}
+                    <ActionButton
+                        onClick={() => setDemoDialog(true)}
                         variant="outline"
-                        size="sm"
-                        className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                        className="border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400"
                     >
                         <svg
                             className="h-4 w-4 mr-2"
@@ -166,11 +144,11 @@ export default function FormEditor({ formId, onClose }) {
                             />
                         </svg>
                         Open Form
-                    </Button>
-                    <Button onClick={onClose} variant="outline" size="sm">
+                    </ActionButton>
+                    <ActionButton onClick={onClose} variant="outline">
                         <X className="h-4 w-4 mr-2" />
                         Close
-                    </Button>
+                    </ActionButton>
                 </div>
             </div>
 
@@ -291,8 +269,7 @@ export default function FormEditor({ formId, onClose }) {
                         <div className="space-y-4">
                             {/* Add New Field Before First Field */}
                             <div className="text-center">
-                                <Button
-                                    size="sm"
+                                <ActionButton
                                     variant="outline"
                                     className="border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
                                     disabled
@@ -311,7 +288,7 @@ export default function FormEditor({ formId, onClose }) {
                                         />
                                     </svg>
                                     Add New Field
-                                </Button>
+                                </ActionButton>
                             </div>
 
                             {form.fields
@@ -344,8 +321,7 @@ export default function FormEditor({ formId, onClose }) {
 
                                                     {/* Remove Field Button */}
                                                     <div className="h-px w-4 bg-slate-300"></div>
-                                                    <Button
-                                                        size="sm"
+                                                    <ActionButton
                                                         variant="outline"
                                                         className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400"
                                                         disabled
@@ -364,7 +340,7 @@ export default function FormEditor({ formId, onClose }) {
                                                             />
                                                         </svg>
                                                         Remove
-                                                    </Button>
+                                                    </ActionButton>
                                                 </div>
                                             </div>
 
@@ -508,8 +484,7 @@ export default function FormEditor({ formId, onClose }) {
 
                                         {/* Add New Field After This Field */}
                                         <div className="text-center mt-4">
-                                            <Button
-                                                size="sm"
+                                            <ActionButton
                                                 variant="outline"
                                                 className="border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
                                                 disabled
@@ -528,15 +503,14 @@ export default function FormEditor({ formId, onClose }) {
                                                     />
                                                 </svg>
                                                 Add New Field
-                                            </Button>
+                                            </ActionButton>
                                         </div>
                                     </div>
                                 ))}
 
                             {/* Add New Field After Last Field */}
                             <div className="text-center">
-                                <Button
-                                    size="sm"
+                                <ActionButton
                                     variant="outline"
                                     className="border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
                                     disabled
@@ -555,7 +529,7 @@ export default function FormEditor({ formId, onClose }) {
                                         />
                                     </svg>
                                     Add New Field
-                                </Button>
+                                </ActionButton>
                             </div>
                         </div>
                     ) : (
@@ -631,76 +605,21 @@ export default function FormEditor({ formId, onClose }) {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3">
-                <Button onClick={onClose} variant="outline" disabled>
+                <ActionButton onClick={onClose} variant="outline" disabled>
                     Cancel
-                </Button>
-                <Button
+                </ActionButton>
+                <ActionButton
                     onClick={handleSave}
                     disabled={true}
                     className="bg-blue-600 hover:bg-blue-700"
                 >
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
+                </ActionButton>
             </div>
 
             {/* Demo Dialog */}
-            {demoDialog.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-                        <div className="flex items-center mb-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg
-                                    className="h-6 w-6 text-blue-600"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    Demo Project
-                                </h3>
-                                <p className="text-sm text-gray-500">
-                                    This is a demonstration version
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mb-6">
-                            <p className="text-gray-700 mb-3">
-                                This is a demo project. In the full version, you
-                                would be able to see the generated form layout
-                                and test data entry here.
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                However, since you haven't paid for the premium
-                                version yet, this feature is not available.
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end">
-                            <Button
-                                onClick={() =>
-                                    setDemoDialog({
-                                        isOpen: false,
-                                    })
-                                }
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                Got it
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DemoDialog isOpen={demoDialog} onOpenChange={setDemoDialog} />
         </div>
     );
 

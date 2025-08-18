@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import UserForms from '@/Components/UserForms';
 import FormEditor from '@/Components/FormEditor';
 import { LogOut, X, Home, FileText } from 'lucide-react';
+import DemoDialog from '@/components/ui/DemoDialog';
 
 export default function Dashboard() {
     const { logout } = useAuth();
     const [activeTab, setActiveTab] = useState(null);
     const [openTabs, setOpenTabs] = useState([]);
+    const [demoDialog, setDemoDialog] = useState(false);
 
     // Load open tabs from localStorage on component mount
     useEffect(() => {
@@ -77,7 +79,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen bg-slate-50">
             {/* Header with Logout button */}
             <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -139,16 +141,13 @@ export default function Dashboard() {
                                 <button
                                     onClick={e => {
                                         e.stopPropagation();
-                                        // Open demo dialog here
-                                        alert(
-                                            "This is a demo project. In the full version, you would be able to see the generated form layout and test data entry here. However, since you haven't paid for the premium version yet, this feature is not available."
-                                        );
+                                        setDemoDialog(true);
                                     }}
-                                    className="w-5 h-5 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors mr-1"
+                                    className="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors mr-1"
                                     title="Open Form (Demo)"
                                 >
                                     <svg
-                                        className="h-3 w-3 text-slate-500 hover:text-slate-700"
+                                        className="h-3 w-3 text-slate-600 hover:text-slate-800"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -188,6 +187,9 @@ export default function Dashboard() {
                     <UserForms onOpenForm={openFormTab} />
                 )}
             </main>
+
+            {/* Demo Dialog */}
+            <DemoDialog isOpen={demoDialog} onOpenChange={setDemoDialog} />
         </div>
     );
 }
